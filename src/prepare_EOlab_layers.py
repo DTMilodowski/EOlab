@@ -25,3 +25,23 @@ def convert_array_to_rgb(array, cmap, ulim, llim):
   return rgb_array
 
 
+def write_array_to_data_layer_GeoTiff(array,<details>, OUTFILE, EPSG_CODE):
+
+    # first set all the relevant geospatial information
+    dataset_ds = driver.Create( 'temp.tif', NCols, NRows, NBands, gdal.GDT_Float32 )
+    dataset_ds.SetGeoTransform( [ XMinimum, DataResX, 0, YMinimum, 0, DataResY ] )
+    srs = osr.SpatialReference()
+    srs.SetWellKnownGeogCS( 'EPSG:'+EPSG_CODE_INIT )
+    dataset_ds.SetProjection( srs.ExportToWkt() )
+    # write array
+    dataset_ds.GetRasterBand(1).SetNoDataValue( -9999 )
+    dataset_ds.GetRasterBand(1).WriteArray( Ctot_u )
+    dataset_ds = None
+    # now use gdalwarp to reproject 
+    os.system("gdalwarp -t_srs EPSG:" + EPSG_CODE_TARGET + " -srcnodata -9999 -dstnodata -9999 temp.tif " + OUTFILE)
+    os.system("rm temp.tif")    
+
+    return 0
+
+def write_array_to_display_layer_GeoTiff(array,<details>):
+    return 0
