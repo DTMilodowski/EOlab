@@ -1,3 +1,12 @@
+import numpy as np
+from matplotlib import pyplot as plt
+from osgeo import gdal
+import os
+import osr
+import sys
+from netCDF4 import Dataset
+
+
 import matplotlib as mpl
 import matplotlib.cm as cm
 
@@ -14,3 +23,5 @@ def convert_array_to_rgb(array, cmap, ulim, llim):
         rgb_array[i,j,:] = np.asarray([255,0,255]) # check this
   
   return rgb_array
+
+
