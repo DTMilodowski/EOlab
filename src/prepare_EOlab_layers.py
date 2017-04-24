@@ -10,6 +10,28 @@ from netCDF4 import Dataset
 import matplotlib as mpl
 import matplotlib.cm as cm
 
+# This is a super simple function that loads in a NetCDF file and pulls out the important coordinate
+# system info that is needed for writing georeferenced GeoTIFFs.  Since NetCDF files will vary in
+# terms of their dimensionality and number of variables, subsequent processing to GeoTIFF layers has
+# been separated out into a separate function
+def load_NetCDF(NetCDF_file):
+    dataset = Dataset(NetCDF_file)
+    
+    # Get the spatial information from the layer
+    Lat = dataset.variables['latitude'][:]
+    Long = dataset.variables['longitude'][:]
+    
+    DataResX = np.abs(Long[0]-Long[1])
+    DataResY = np.abs(Lat[0]-Lat[1])
+    
+    XMinimum = np.min(Long)
+    YMinimum = np.min(Lat)
+
+    geoTransform = [ XMinimum, DataResX, 0, YMinimum, 0, DataResY ]
+    
+    return dataset, geoTransform
+
+
 def convert_array_to_rgb(array, cmap, ulim, llim):
   norm = mpl.colors.Normalize(vmin=llim, vmax=ulim)
   
@@ -25,7 +47,7 @@ def convert_array_to_rgb(array, cmap, ulim, llim):
   return rgb_array
 
 
-def write_array_to_data_layer_GeoTiff(array,<details>, OUTFILE, EPSG_CODE):
+def write_array_to_data_layer_GeoTiff(array,<details>, OUTFILE, EPSG_CODE='4326'):
 
     # first set all the relevant geospatial information
     dataset_ds = driver.Create( 'temp.tif', NCols, NRows, NBands, gdal.GDT_Float32 )
