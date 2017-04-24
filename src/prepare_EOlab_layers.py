@@ -9,6 +9,7 @@ from netCDF4 import Dataset
 
 import matplotlib as mpl
 import matplotlib.cm as cm
+from matplotlib import ticker
 
 # This is a super simple function that loads in a NetCDF file and pulls out the important coordinate
 # system info that is needed for writing georeferenced GeoTIFFs.  Since NetCDF files will vary in
@@ -149,5 +150,15 @@ def write_array_to_display_layer_GeoTiff(array, geoTrans, OUTFILE_prefix, cmap, 
 
 
 # A function to produce a simple map legend for quantitative data layers
-def plot_legend(cmap,ulim,llim):
+def plot_legend(cmap,ulim,llim,axis_label):
+    norm = mpl.colors.Normalize(vmin=llim, vmax=ulim)
+    plt.figure(1, facecolor='White',figsize=[3, 1])
+    ax = plt.subplot2grid((1,1),(0,0))
+    cb = mpl.colorbar.ColorbarBase(ax,cmap=cmap,norm=norm,orientation='horizontal')
+    tick_locator = ticker.MaxNLocator(nbins=5)
+    cb.locator = tick_locator
+    cb.update_ticks()
+    cb.set_label(axis_label)
+    plt.tight_layout()
+    plt.show()
     return 0
