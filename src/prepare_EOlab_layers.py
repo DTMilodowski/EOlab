@@ -39,11 +39,11 @@ def convert_array_to_rgb(array, cmap, ulim, llim):
     rows, cols = array.shape
     rgb_array = np.zeros((rows,cols,3),dtype=np.uint8)*np.nan
     for i in range(0,rows):
-      for j in range(0,cols):
-        if np.isfinite(array[i,j]):
-          rgb_array[i,j,:]= cm.ScalarMappable(norm=norm,cmap=cmap).to_rgba(array[i,j])
-        else:
-          rgb_array[i,j,:] = np.asarray([255,0,255]) # check this
+        for j in range(0,cols):
+            if np.isfinite(array[i,j]):
+                rgb_array[i,j,:]= cm.ScalarMappable(norm=norm,cmap=cmap).to_rgba(array[i,j])[:3]
+            else:
+                rgb_array[i,j,:] = np.asarray([255,0,255]) # check this
   
     return rgb_array
 
@@ -67,8 +67,7 @@ def write_array_to_data_layer_GeoTiff(array,geoTrans, OUTFILE_prefix, EPSG_CODE=
     else:
         print 'array has too many dimensions! Unable to write to raster'
         sys.exit(1)  
-    
-        
+
     # Write GeoTiff
     driver = gdal.GetDriverByName('GTiff')
     driver.Register()
@@ -88,7 +87,7 @@ def write_array_to_data_layer_GeoTiff(array,geoTrans, OUTFILE_prefix, EPSG_CODE=
 
 # This function is similar to before, except that now it writes two GeoTIFFs - a data layer and a
 # display layer.  For the moment, this can only accept a 2D input array
-def write_array_to_display_layer_GeoTiff(array, geoTrans, OUTFILE_prefix, cmap, ulim, llim, EPSG_CODE_DATA='4326', ESPG_CODE_DISPLAY='3857'):
+def write_array_to_display_layer_GeoTiff(array, geoTrans, OUTFILE_prefix, cmap, ulim, llim, EPSG_CODE_DATA='4326', EPSG_CODE_DISPLAY='3857'):
 
     NBands = 1
     NBands_RGB = 3
@@ -137,7 +136,7 @@ def write_array_to_display_layer_GeoTiff(array, geoTrans, OUTFILE_prefix, cmap, 
     dataset.SetProjection( srs.ExportToWkt() )
     # write array
     dataset.GetRasterBand(1).SetNoDataValue( -9999 )
-    dataset.GetRasterBand(1).WriteArray( array )
+    dataset.GetRasterBand(1).WriteArray( rgb_array )
     dataset = None
 
     # now use gdalwarp to reproject 
