@@ -49,7 +49,7 @@ def convert_array_to_rgb(array, cmap, ulim, llim):
 
 # Function to write an EO lab data layer from an array
 def write_array_to_data_layer_GeoTiff(array,geoTrans, OUTFILE_prefix, EPSG_CODE='4326'):
-    N_bands = 1
+    NBands = 1
     NRows = 0
     NCols = 0
 
@@ -90,8 +90,8 @@ def write_array_to_data_layer_GeoTiff(array,geoTrans, OUTFILE_prefix, EPSG_CODE=
 # display layer.  For the moment, this can only accept a 2D input array
 def write_array_to_display_layer_GeoTiff(array, geoTrans, OUTFILE_prefix, cmap, ulim, llim, EPSG_CODE_DATA='4326', ESPG_CODE_DISPLAY='3857'):
 
-    N_bands = 1
-    N_bands_RGB = 3
+    NBands = 1
+    NBands_RGB = 3
     NRows = 0
     NCols = 0
 
@@ -130,7 +130,7 @@ def write_array_to_display_layer_GeoTiff(array, geoTrans, OUTFILE_prefix, cmap, 
     driver.Register()
 
     # set all the relevant geospatial information
-    dataset = driver.Create( 'temp.tif', NCols, NRows, NBands, gdal.GDT_Float32 )
+    dataset = driver.Create( 'temp.tif', NCols, NRows, NBands_RGB, gdal.GDT_Float32 )
     dataset.SetGeoTransform( geoTrans )
     srs = osr.SpatialReference()
     srs.SetWellKnownGeogCS( 'EPSG:'+EPSG_CODE_DATA )
