@@ -135,8 +135,9 @@ def write_array_to_display_layer_GeoTiff(array, geoTrans, OUTFILE_prefix, cmap, 
     srs.SetWellKnownGeogCS( 'EPSG:'+EPSG_CODE_DATA )
     dataset.SetProjection( srs.ExportToWkt() )
     # write array
-    dataset.GetRasterBand(1).SetNoDataValue( -9999 )
-    dataset.GetRasterBand(1).WriteArray( rgb_array )
+    for bb in range(0,3):
+        dataset.GetRasterBand(bb+1).SetNoDataValue( -9999 )
+        dataset.GetRasterBand(bb+1).WriteArray( rgb_array[:,:,bb] )
     dataset = None
 
     # now use gdalwarp to reproject 
