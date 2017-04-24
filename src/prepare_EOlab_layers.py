@@ -31,7 +31,8 @@ def load_NetCDF(NetCDF_file):
     
     return dataset, geoTransform
 
-
+# Convert a python array with float variables into a three-band RGB array with the colours specified
+# according to a given colormap and upper and lower limits to the colormap 
 def convert_array_to_rgb(array, cmap, ulim, llim):
   norm = mpl.colors.Normalize(vmin=llim, vmax=ulim)
   
