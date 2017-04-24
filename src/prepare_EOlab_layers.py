@@ -14,12 +14,12 @@ import matplotlib.cm as cm
 # system info that is needed for writing georeferenced GeoTIFFs.  Since NetCDF files will vary in
 # terms of their dimensionality and number of variables, subsequent processing to GeoTIFF layers has
 # been separated out into a separate function
-def load_NetCDF(NetCDF_file):
+def load_NetCDF(NetCDF_file,lat_var = 'lat', lon_var = 'lon'):
     dataset = Dataset(NetCDF_file)
     
     # Get the spatial information from the layer
-    Lat = dataset.variables['latitude'][:]
-    Long = dataset.variables['longitude'][:]
+    Lat = dataset.variables[lat_var][:]
+    Long = dataset.variables[lon_var][:]
     
     DataResX = np.abs(Long[0]-Long[1])
     DataResY = np.abs(Lat[0]-Lat[1])
