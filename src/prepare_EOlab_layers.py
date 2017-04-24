@@ -42,6 +42,7 @@ def convert_array_to_rgb(array, cmap, ulim, llim):
         for j in range(0,cols):
             if np.isfinite(array[i,j]):
                 rgb_array[i,j,:]= cm.ScalarMappable(norm=norm,cmap=cmap).to_rgba(array[i,j])[:3]
+                rgb_array[i,j,:]*=255
             else:
                 rgb_array[i,j,:] = np.asarray([255,0,255]) # check this
   
@@ -129,19 +130,20 @@ def write_array_to_display_layer_GeoTiff(array, geoTrans, OUTFILE_prefix, cmap, 
     driver.Register()
 
     # set all the relevant geospatial information
-    dataset = driver.Create( 'temp.tif', NCols, NRows, NBands_RGB, gdal.GDT_Float32 )
+    dataset = driver.Create( 'temp.tif', NCols, NRows, NBands_RGB, gdal.GDT_Byte )
     dataset.SetGeoTransform( geoTrans )
     srs = osr.SpatialReference()
     srs.SetWellKnownGeogCS( 'EPSG:'+EPSG_CODE_DATA )
     dataset.SetProjection( srs.ExportToWkt() )
     # write array
     for bb in range(0,3):
-        dataset.GetRasterBand(bb+1).SetNoDataValue( -9999 )
+        #dataset.GetRasterBand(bb+1).SetNoDataValue( -9999 )
         dataset.GetRasterBand(bb+1).WriteArray( rgb_array[:,:,bb] )
     dataset = None
 
     # now use gdalwarp to reproject 
-    os.system("gdalwarp -t_srs EPSG:" + EPSG_CODE_DISPLAY + " -srcnodata -9999 -dstnodata -9999 temp.tif " + OUTFILE_prefix+'_display.tif')
+    #os.system("gdalwarp -t_srs EPSG:" + EPSG_CODE_DISPLAY + " -srcnodata -9999 -dstnodata -9999 temp.tif " + OUTFILE_prefix+'_display.tif')
+    os.system("gdalwarp -t_srs EPSG:" + EPSG_CODE_DISPLAY + " temp.tif " + OUTFILE_prefix+'_display.tif')
     os.system("rm temp.tif")    
     return 0
 
