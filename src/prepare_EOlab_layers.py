@@ -85,9 +85,47 @@ def write_array_to_data_layer_GeoTiff(array,geoTrans, OUTFILE_prefix, EPSG_CODE=
     dataset = None
     return 0
 
-def write_array_to_display_layer_GeoTiff(array,<details>):
 
-    # Write GeoTiff
+# This function is similar to before, except that now it writes two GeoTIFFs - a data layer and a
+# display layer.  For the moment, this can only accept a 2D input array
+def write_array_to_display_layer_GeoTiff(array, geoTrans, OUTFILE_prefix, cmap, ulim, llim, EPSG_CODE_DATA='4326', ESPG_CODE_DISPLAY='3857'):
+
+    N_bands = 1
+    N_bands_RGB = 3
+    NRows = 0
+    NCols = 0
+
+    # Get array dimensions and flip so that it plots in the correct orientation on GIS platforms
+    if len(array.shape) < 2: 
+        print 'array has less than two dimensions! Unable to write to raster'
+        sys.exit(1)  
+    elif len(array.shape) == 2:
+        (NRows,NCols) = array.shape
+        array = np.flipud(array)
+    else:
+        print 'array has too many dimensions! Unable to write to raster'
+        sys.exit(1)  
+
+    # Convert RGB array
+    rgb_array = convert_array_to_rgb(array,cmap,ulim,llim)
+    
+    
+    # Write Data Layer GeoTiff
+    driver = gdal.GetDriverByName('GTiff')
+    driver.Register()
+
+    # set all the relevant geospatial information
+    dataset = driver.Create( OUTFILE_prefix+'_data.tif', NCols, NRows, NBands, gdal.GDT_Float32 )
+    dataset.SetGeoTransform( geoTrans )
+    srs = osr.SpatialReference()
+    srs.SetWellKnownGeogCS( 'EPSG:'+EPSG_CODE_DATA )
+    dataset_ds.SetProjection( srs.ExportToWkt() )
+    # write array
+    dataset.GetRasterBand(1).SetNoDataValue( -9999 )
+    dataset.GetRasterBand(1).WriteArray( array )
+    dataset = None
+
+    # Write Display Layer GeoTiff
     driver = gdal.GetDriverByName('GTiff')
     driver.Register()
 
@@ -95,13 +133,14 @@ def write_array_to_display_layer_GeoTiff(array,<details>):
     dataset = driver.Create( 'temp.tif', NCols, NRows, NBands, gdal.GDT_Float32 )
     dataset.SetGeoTransform( geoTrans )
     srs = osr.SpatialReference()
-    srs.SetWellKnownGeogCS( 'EPSG:'+EPSG_CODE )
+    srs.SetWellKnownGeogCS( 'EPSG:'+EPSG_CODE_DATA )
     dataset_ds.SetProjection( srs.ExportToWkt() )
     # write array
     dataset.GetRasterBand(1).SetNoDataValue( -9999 )
     dataset.GetRasterBand(1).WriteArray( array )
     dataset = None
+
     # now use gdalwarp to reproject 
-    os.system("gdalwarp -t_srs EPSG:" + EPSG_CODE_TARGET + " -srcnodata -9999 -dstnodata -9999 temp.tif " + OUTFILE)
+    os.system("gdalwarp -t_srs EPSG:" + EPSG_CODE_DISPLAY + " -srcnodata -9999 -dstnodata -9999 temp.tif " + OUTFILE_prefix+'_display.tif')
     os.system("rm temp.tif")    
     return 0
