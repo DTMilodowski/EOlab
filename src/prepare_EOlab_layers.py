@@ -144,3 +144,8 @@ def write_array_to_display_layer_GeoTiff(array, geoTrans, OUTFILE_prefix, cmap, 
     os.system("gdalwarp -t_srs EPSG:" + EPSG_CODE_DISPLAY + " -srcnodata -9999 -dstnodata -9999 temp.tif " + OUTFILE_prefix+'_display.tif')
     os.system("rm temp.tif")    
     return 0
+
+
+# A function to produce a simple map legend for quantitative data layers
+def plot_legend(cmap,ulim,llim):
+    return 0
