@@ -47,6 +47,7 @@ def convert_array_to_rgb(array, cmap, ulim, llim):
   
     return rgb_array
 
+# Function to write an EO lab data layer from an array
 def write_array_to_data_layer_GeoTiff(array,geoTrans, OUTFILE_prefix, EPSG_CODE='4326'):
     N_bands = 1
     NRows = 0
