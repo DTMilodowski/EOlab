@@ -150,7 +150,7 @@ def write_array_to_display_layer_GeoTiff(array, geoTrans, OUTFILE_prefix, cmap, 
 
 
 # A function to produce a simple map legend for quantitative data layers
-def plot_legend(cmap,ulim,llim,axis_label):
+def plot_legend(cmap,ulim,llim,axis_label, OUTFILE_prefix):
     norm = mpl.colors.Normalize(vmin=llim, vmax=ulim)
     plt.figure(1, facecolor='White',figsize=[3, 1])
     ax = plt.subplot2grid((1,1),(0,0))
@@ -160,5 +160,6 @@ def plot_legend(cmap,ulim,llim,axis_label):
     cb.update_ticks()
     cb.set_label(axis_label)
     plt.tight_layout()
+    plt.savefig(OUTFILE_prefix+'_legend.png')
     plt.show()
     return 0
