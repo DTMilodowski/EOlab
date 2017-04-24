@@ -24,8 +24,8 @@ def load_NetCDF(NetCDF_file,lat_var = 'lat', lon_var = 'lon'):
     DataResX = np.abs(Long[0]-Long[1])
     DataResY = np.abs(Lat[0]-Lat[1])
     
-    XMinimum = np.min(Long)
-    YMinimum = np.min(Lat)
+    XMinimum = np.min(Long)-DataResX/2.
+    YMinimum = np.min(Lat)-DataResY/2.
 
     geoTransform = [ XMinimum, DataResX, 0, YMinimum, 0, DataResY ]
     
