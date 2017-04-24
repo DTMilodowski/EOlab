@@ -21,10 +21,10 @@ for vv in range(0,len(vars)):
     file_prefix = SAVEDIR + 'tropics_' + vars[vv]
 
     # delete existing dataset if present
-    if 'tropics_'+vars[vv]'_data.tif' in os.listdir(SAVEDIR):
-        !rm 'tropics_'+vars[vv]'_data.tif' 
-    if 'tropics_'+vars[vv]'_display.tif' in os.listdir(SAVEDIR):
-        !rm 'tropics_'+vars[vv]'_display.tif' 
+    if 'tropics_'+vars[vv]+'_data.tif' in os.listdir(SAVEDIR):
+        !rm 'tropics_'+vars[vv]+'_data.tif' 
+    if 'tropics_'+vars[vv]+'_display.tif' in os.listdir(SAVEDIR):
+        !rm 'tropics_'+vars[vv]+'_display.tif' 
 
     #EO.write_array_to_data_layer_GeoTiff(dataset.variables[vars[vv]],geoTrans, file_prefix)
 
