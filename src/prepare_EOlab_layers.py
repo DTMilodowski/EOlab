@@ -119,7 +119,7 @@ def write_array_to_display_layer_GeoTiff(array, geoTrans, OUTFILE_prefix, cmap, 
     dataset.SetGeoTransform( geoTrans )
     srs = osr.SpatialReference()
     srs.SetWellKnownGeogCS( 'EPSG:'+EPSG_CODE_DATA )
-    dataset_ds.SetProjection( srs.ExportToWkt() )
+    dataset.SetProjection( srs.ExportToWkt() )
     # write array
     dataset.GetRasterBand(1).SetNoDataValue( -9999 )
     dataset.GetRasterBand(1).WriteArray( array )
