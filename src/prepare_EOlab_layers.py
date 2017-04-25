@@ -32,6 +32,32 @@ def load_NetCDF(NetCDF_file,lat_var = 'lat', lon_var = 'lon'):
     
     return dataset, geoTransform
 
+# Function to load a GeoTIFF band plus georeferencing information.  Only loads one band,
+# which is band 1 by default
+def load_GeoTIFF_band_and_georeferencing(File,band_number=1):
+    
+    driver = gdal.GetDriverByName('GTiff')
+    driver.Register()
+
+    try:
+        ds = gdal.Open(File)
+    except RuntimeError, e:
+        print 'unable to open ' + File
+        print e
+        sys.exit(1)
+        
+    source_band = ds.GetRasterBand(band_number)
+    if source_band is None:
+        print "BAND MISSING"
+        sys.exit(1)  
+
+    array = np.array(ds.GetRasterBand(band_number).ReadAsArray(),dtype=np.float64)
+    geoTrans = ds.GetGeoTransform()
+    coord_sys = ds.GetProjectionRef()
+
+    return array, geoTrans, coord_sys
+
+
 # Convert a python array with float variables into a three-band RGB array with the colours specified
 # according to a given colormap and upper and lower limits to the colormap 
 def convert_array_to_rgb(array, cmap, ulim, llim):
