@@ -32,6 +32,29 @@ def load_NetCDF(NetCDF_file,lat_var = 'lat', lon_var = 'lon'):
     
     return dataset, geoTransform
 
+# A function to resample an array to a higher resolution.  The resampling is specified using an scalar,
+# which should be an integer, and represents the number of divisions each cell is to be split into.
+# This only resamples to higher resolutions, and does not deal with aggregating to lower resolutions.
+# The main reason for using this is to increase the accuracy of area based queries using polygon
+# shapefiles in EO lab applications. vars is a list of variables which you'd like to resample
+def resample_dataset(dataset,geoTransform,vars,resampling_scalar):
+    ds = {}
+    for vv in range(0,len(vars)):
+        print vars[vv]
+        ds[vars[vv]], geoTrans = resample_array(dataset[vars[vv]],geoTransform)
+
+    return ds, geoTrans
+
+def resample_array(array,geoTransform,resampling_scalar):
+    rs = resample_scalar
+    rows,cols = array.shape
+    array_out = np.zeros((rows*rs,cols*rs))
+    for ii in range(0,rows):
+        for jj in range(0,cols):
+            array_out[ii*rs:(ii+1)*rs,jj*rs:(jj+1)*rs]
+    geoTrans = [geoTransform[0], geoTransform[1]/float(rs), geoTransform[2], geoTransform[3], geoTransform[4], geoTransform[5]/float(rs)]
+    return array_out, geoTrans
+
 # Function to load a GeoTIFF band plus georeferencing information.  Only loads one band,
 # which is band 1 by default
 def load_GeoTIFF_band_and_georeferencing(File,band_number=1):
