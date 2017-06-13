@@ -143,7 +143,7 @@ def write_array_to_data_layer_GeoTiff(array,geoTrans, OUTFILE_prefix, EPSG_CODE=
         else:
             print 'array has too many dimensions! Unable to write to raster'
             sys.exit(1)  
-    """
+    
     # Get array dimensions and flip so that it plots in the correct orientation on GIS platforms
     if len(array.shape) < 2: 
         print 'array has less than two dimensions! Unable to write to raster'
@@ -158,7 +158,7 @@ def write_array_to_data_layer_GeoTiff(array,geoTrans, OUTFILE_prefix, EPSG_CODE=
     else:
         print 'array has too many dimensions! Unable to write to raster'
         sys.exit(1)  
-    """
+    
     # Write GeoTiff
     driver = gdal.GetDriverByName('GTiff')
     driver.Register()
