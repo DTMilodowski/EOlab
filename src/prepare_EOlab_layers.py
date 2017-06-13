@@ -21,14 +21,15 @@ def load_NetCDF(NetCDF_file,lat_var = 'lat', lon_var = 'lon'):
     # Get the spatial information from the layer
     Lat = dataset.variables[lat_var][:]
     Long = dataset.variables[lon_var][:]
-    
     DataResX = np.abs(Long[0]-Long[1])
     DataResY = np.abs(Lat[0]-Lat[1])
     
     XMinimum = np.min(Long)-DataResX/2.
     YMinimum = np.min(Lat)-DataResY/2.
+    YMaximum = np.max(Lat)+DataResY/2.
 
-    geoTransform = [ XMinimum, DataResX, 0, YMinimum, 0, DataResY ]
+    #geoTransform = [ XMinimum, DataResX, 0, YMinimum, 0, DataResY ]
+    geoTransform = [ XMinimum, DataResX, 0, YMaximum, 0, -DataResY ]
     
     return dataset, geoTransform
 
@@ -98,11 +99,51 @@ def convert_array_to_rgb(array, cmap, ulim, llim):
     return rgb_array
 
 # Function to write an EO lab data layer from an array
-def write_array_to_data_layer_GeoTiff(array,geoTrans, OUTFILE_prefix, EPSG_CODE='4326'):
+def write_array_to_data_layer_GeoTiff(array,geoTrans, OUTFILE_prefix, EPSG_CODE='4326', north_up=True):
     NBands = 1
     NRows = 0
     NCols = 0
 
+    if north_up:
+        # for north_up array, need the n-s resolution (element 5) to be negative
+        if geoTrans[5]>0:
+            geoTrans[5]*=-1
+            geoTrans[3] = geoTrans[3]-(array.shape[0]+1.)*geoTrans[5]
+        # Get array dimensions and flip so that it plots in the correct orientation on GIS platforms
+        if len(array.shape) < 2: 
+            print 'array has less than two dimensions! Unable to write to raster'
+            sys.exit(1)  
+        elif len(array.shape) == 2:
+            (NRows,NCols) = array.shape
+            array = np.flipud(array)
+        elif len(array.shape) == 3:
+            (NRows,NCols,NBands) = array.shape
+            for i in range(0,NBands):
+                array[:,:,i] = np.flipud(array[:,:,i])
+        else:
+            print 'array has too many dimensions! Unable to write to raster'
+            sys.exit(1)  
+
+    else:
+        # for north_up array, need the n-s resolution (element 5) to be positive
+        if geoTrans[5]<0:
+            geoTrans[5]*=-1
+            geoTrans[3] = geoTrans[3]-(array.shape[0]+1.)*geoTrans[5]
+        # Get array dimensions and flip so that it plots in the correct orientation on GIS platforms
+        if len(array.shape) < 2: 
+            print 'array has less than two dimensions! Unable to write to raster'
+            sys.exit(1)  
+        elif len(array.shape) == 2:
+            (NRows,NCols) = array.shape
+            array = np.flipud(array)
+        elif len(array.shape) == 3:
+            (NRows,NCols,NBands) = array.shape
+            for i in range(0,NBands):
+                array[:,:,i] = np.flipud(array[:,:,i])
+        else:
+            print 'array has too many dimensions! Unable to write to raster'
+            sys.exit(1)  
+    """
     # Get array dimensions and flip so that it plots in the correct orientation on GIS platforms
     if len(array.shape) < 2: 
         print 'array has less than two dimensions! Unable to write to raster'
@@ -117,7 +158,7 @@ def write_array_to_data_layer_GeoTiff(array,geoTrans, OUTFILE_prefix, EPSG_CODE=
     else:
         print 'array has too many dimensions! Unable to write to raster'
         sys.exit(1)  
-
+    """
     # Write GeoTiff
     driver = gdal.GetDriverByName('GTiff')
     driver.Register()
