@@ -50,7 +50,7 @@ def resample_array(array,geoTransform,resampling_scalar):
     array_out = np.zeros((rows*rs,cols*rs))
     for ii in range(0,rows):
         for jj in range(0,cols):
-            array_out[ii*rs:(ii+1)*rs,jj*rs:(jj+1)*rs]
+            array_out[ii*rs:(ii+1)*rs,jj*rs:(jj+1)*rs]=array[ii,jj]
     geoTrans = [geoTransform[0], geoTransform[1]/float(rs), geoTransform[2], geoTransform[3], geoTransform[4], geoTransform[5]/float(rs)]
     return array_out, geoTrans
 
