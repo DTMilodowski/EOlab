@@ -41,12 +41,11 @@ def resample_dataset(dataset,geoTransform,vars,resampling_scalar):
     ds = {}
     for vv in range(0,len(vars)):
         print vars[vv]
-        ds[vars[vv]], geoTrans = resample_array(dataset[vars[vv]],geoTransform)
-
+        ds[vars[vv]], geoTrans = resample_array(np.asarray(dataset.variables[vars[vv]]),geoTransform,resampling_scalar)
     return ds, geoTrans
 
 def resample_array(array,geoTransform,resampling_scalar):
-    rs = resample_scalar
+    rs = resampling_scalar
     rows,cols = array.shape
     array_out = np.zeros((rows*rs,cols*rs))
     for ii in range(0,rows):
