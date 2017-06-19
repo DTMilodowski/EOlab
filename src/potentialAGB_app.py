@@ -50,3 +50,6 @@ if 'tropics_reforest_potential_display.tif' in os.listdir(SAVEDIR):
 EO.write_array_to_display_layer_GeoTiff(dataset['AGBreg'], geoTrans, 'tropics_reforest_potential', cmap, ulim, llim)
 EO.plot_legend(cmap, ulim,llim,axis_label, 'tropics_reforest_potential')
 """
+
+
+# Now write the quantitative display layers to file
