@@ -10,10 +10,10 @@ import prepare_EOlab_layers as EO
 NetCDF_file = '/home/dmilodow/DataStore_GCEL/AGB/AGBregpot.nc'
 SAVEDIR = './'
 ds,geoTrans = EO.load_NetCDF(NetCDF_file)
-dataset, geoTrans = EO.resample_dataset(ds,geoTrans,vars,resampling_scalar)
-
 resampling_scalar = 3.
 vars = ['AGBobs','AGBpot','AGBreg']
+dataset, geoTrans = EO.resample_dataset(ds,geoTrans,vars,resampling_scalar)
+
 cmaps = ['YlGn','YlGn','PRGn']
 ulims = [230.,230.,100.]
 llims = [0.,0.,-100.]
