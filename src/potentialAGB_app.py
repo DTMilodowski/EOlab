@@ -52,4 +52,25 @@ EO.plot_legend(cmap, ulim,llim,axis_label, 'tropics_reforest_potential')
 """
 
 
-# Now write the quantitative display layers to file
+# Now write the quantitative display layers to file.  These probide the 
+rows, cols = dataset[vars[0]].shape
+latitude = np.arange(geoTrans[3],rows*geoTrans[5]+geoTrans[3],geoTrans[5])
+longitude =  np.arange(geoTrans[0],cols*geoTrans[1]+geoTrans[0],geoTrans[1])
+areas = geo.calculate_cell_area_array(latitude,longitude, area_scalar = 1./10.**4,cell_centred=False)
+
+# loop through the variables, multiplying by cell areas to give values in Mg
+for vv in range(0,len(vars)):
+    print vars[vv]
+    file_prefix = SAVEDIR + 'tropics_' + vars[vv] + '_total_data'
+
+    out_array = dataset[vars[vv]] * areas
+    out_array[dataset[vars[vv]]==-9999]=-9999  # not sure why np.asarray step is needed but gets the job done
+    EO.write_array_to_data_layer_GeoTiff(out_array, geoTrans, file_prefix)
+    out_array=None
+
+# Also want to write cell areas to file.  However, as this will be compared against other layers, need to carry across
+# nodata values
+areas_out = areas.copy()
+areas_out[np.asarray(dataset[vars[0]])==-9999] = -9999
+area_file_prefix = SAVEDIR + 'tropics_cell_areas_data'
+EO.write_array_to_data_layer_GeoTiff(areas_out, geoTrans, area_file_prefix)
