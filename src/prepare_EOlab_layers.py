@@ -11,6 +11,11 @@ import matplotlib as mpl
 import matplotlib.cm as cm
 from matplotlib import ticker
 
+import scipy
+from scipy import ndimage, signal
+
+
+
 # This is a super simple function that loads in a NetCDF file and pulls out the important coordinate
 # system info that is needed for writing georeferenced GeoTIFFs.  Since NetCDF files will vary in
 # terms of their dimensionality and number of variables, subsequent processing to GeoTIFF layers has
@@ -46,12 +51,23 @@ def resample_dataset(dataset,geoTransform,vars,resampling_scalar):
     return ds, geoTrans
 
 def resample_array(array,geoTransform,resampling_scalar):
-    rs = resampling_scalar
+    rs = resampling_scalar    
     rows,cols = array.shape
-    array_out = np.zeros((rows*rs,cols*rs))
-    for ii in range(0,rows):
-        for jj in range(0,cols):
-            array_out[ii*rs:(ii+1)*rs,jj*rs:(jj+1)*rs]=array[ii,jj]
+    array_temp = np.zeros((rows*rs,cols*rs))
+
+    # Fill the new array with the original values
+    array_temp[::factor,::factor] = array
+
+    # Define the convolution kernel           
+    kernel_1d = scipy.signal.boxcar(factor)
+    kernel_2d = np.outer(kernel_1d, kernel_1d)
+
+    # Apply the kernel by convolution, seperately in each axis
+    array_out = scipy.signal.convolve(array_temp, kernel_2d, mode="same")
+    
+    #for ii in range(0,rows):
+    #    for jj in range(0,cols):
+    #        array_out[ii*rs:(ii+1)*rs,jj*rs:(jj+1)*rs]=array[ii,jj]
     geoTrans = [geoTransform[0], geoTransform[1]/float(rs), geoTransform[2], geoTransform[3], geoTransform[4], geoTransform[5]/float(rs)]
     return array_out, geoTrans
 
