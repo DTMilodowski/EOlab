@@ -56,10 +56,10 @@ def resample_array(array,geoTransform,resampling_scalar):
     array_temp = np.zeros((rows*rs,cols*rs))
 
     # Fill the new array with the original values
-    array_temp[::factor,::factor] = array
+    array_temp[::rs,::rs] = array
 
     # Define the convolution kernel           
-    kernel_1d = scipy.signal.boxcar(factor)
+    kernel_1d = scipy.signal.boxcar(rs)
     kernel_2d = np.outer(kernel_1d, kernel_1d)
 
     # Apply the kernel by convolution, seperately in each axis
