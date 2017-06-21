@@ -275,12 +275,10 @@ def write_array_to_display_layer_GeoTiff(array, geoTrans, OUTFILE_prefix, cmap, 
     dataset.SetProjection( srs.ExportToWkt() )
     # write array
     for bb in range(0,3):
-        #dataset.GetRasterBand(bb+1).SetNoDataValue( -9999 )
         dataset.GetRasterBand(bb+1).WriteArray( rgb_array[:,:,bb] )
     dataset = None
 
-    # now use gdalwarp to reproject 
-    #os.system("gdalwarp -t_srs EPSG:" + EPSG_CODE_DISPLAY + " -srcnodata -9999 -dstnodata -9999 temp.tif " + OUTFILE_prefix+'_display.tif')
+    # now use gdalwarp to reproject
     os.system("gdalwarp -t_srs EPSG:" + EPSG_CODE_DISPLAY + " temp.tif " + OUTFILE_prefix+'_display.tif')
     os.system("rm temp.tif")    
     return 0
@@ -298,5 +296,4 @@ def plot_legend(cmap,ulim,llim,axis_label, OUTFILE_prefix):
     cb.set_label(axis_label,fontsize = axis_size)
     plt.tight_layout()
     plt.savefig(OUTFILE_prefix+'_legend.png')
-    #plt.show()
     return 0
