@@ -108,11 +108,11 @@ def load_GeoTIFF_band_and_georeferencing(File,band_number=1):
 # according to a given colormap and upper and lower limits to the colormap 
 def convert_array_to_rgb(array, cmap, ulim, llim):
     norm = mpl.colors.Normalize(vmin=llim, vmax=ulim)
-    rgb_array= cm.ScalarMappable(norm=norm,cmap=cmap).to_rgba(array)[:,:,:-1]
+    rgb_array= cm.ScalarMappable(norm=norm,cmap=cmap).to_rgba(array)[:,:,:-1]*255
     mask = ~np.isfinite(array)
-    rgb_array[mask,0]=255
-    rgb_array[mask,1]=0
-    rgb_array[mask,2]=255
+    rgb_array[mask,0]=255.
+    rgb_array[mask,1]=0.
+    rgb_array[mask,2]=255.
     """  
     rows, cols = array.shape
     rgb_array = np.zeros((rows,cols,3),dtype=np.uint8)*np.nan
