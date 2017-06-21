@@ -19,9 +19,9 @@ from matplotlib import rcParams
 # Set up some basiic parameters for the plots
 rcParams['font.family'] = 'sans-serif'
 rcParams['font.sans-serif'] = ['arial']
-rcParams['font.size'] = 8
+rcParams['font.size'] = 9
 rcParams['legend.numpoints'] = 1
-axis_size = rcParams['font.size'] + 2
+axis_size = rcParams['font.size']
 
 # This is a super simple function that loads in a NetCDF file and pulls out the important coordinate
 # system info that is needed for writing georeferenced GeoTIFFs.  Since NetCDF files will vary in
