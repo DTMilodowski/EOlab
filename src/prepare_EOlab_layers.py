@@ -110,11 +110,7 @@ def convert_array_to_rgb(array, cmap, ulim, llim, nodatavalue=-9999):
     norm = mpl.colors.Normalize(vmin=llim, vmax=ulim)
     rgb_array= cm.ScalarMappable(norm=norm,cmap=cmap).to_rgba(array)[:,:,:-1]*255
     mask = np.any((~np.isfinite(array),array==nodatavalue),axis=0)
-
-    rgb_array[mask,0]=255.
-    rgb_array[mask,1]=0.
-    rgb_array[mask,2]=255.
-    
+    rgb_array[mask,:]=np.array([255.,0.,255.])
     return rgb_array
 
 # Function to write an EO lab data layer from an array
