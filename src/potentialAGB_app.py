@@ -1,11 +1,15 @@
 import numpy as np
 import os
+import sys
 
 import matplotlib as mpl
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 
 import prepare_EOlab_layers as EO
+
+sys.path.append('/home/dmilodow/DataStore_DTM/FOREST2020/PotentialBiomass/src')
+import geospatial_utility_tools as geo
 
 NetCDF_file = '/home/dmilodow/DataStore_GCEL/AGB/AGBregpot.nc'
 SAVEDIR = './'
