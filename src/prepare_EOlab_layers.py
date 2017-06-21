@@ -15,6 +15,13 @@ import scipy
 from scipy import ndimage, signal
 
 
+from matplotlib import rcParams
+# Set up some basiic parameters for the plots
+rcParams['font.family'] = 'sans-serif'
+rcParams['font.sans-serif'] = ['arial']
+rcParams['font.size'] = 8
+rcParams['legend.numpoints'] = 1
+axis_size = rcParams['font.size'] + 2
 
 # This is a super simple function that loads in a NetCDF file and pulls out the important coordinate
 # system info that is needed for writing georeferenced GeoTIFFs.  Since NetCDF files will vary in
@@ -295,13 +302,13 @@ def write_array_to_display_layer_GeoTiff(array, geoTrans, OUTFILE_prefix, cmap, 
 # A function to produce a simple map legend for quantitative data layers
 def plot_legend(cmap,ulim,llim,axis_label, OUTFILE_prefix):
     norm = mpl.colors.Normalize(vmin=llim, vmax=ulim)
-    plt.figure(1, facecolor='White',figsize=[3, 1])
+    plt.figure(1, facecolor='White',figsize=[2, 1])
     ax = plt.subplot2grid((1,1),(0,0))
     cb = mpl.colorbar.ColorbarBase(ax,cmap=cmap,norm=norm,orientation='horizontal')
     tick_locator = ticker.MaxNLocator(nbins=5)
     cb.locator = tick_locator
     cb.update_ticks()
-    cb.set_label(axis_label)
+    cb.set_label(axis_label,fontsize = axis_size)
     plt.tight_layout()
     plt.savefig(OUTFILE_prefix+'_legend.png')
     #plt.show()
