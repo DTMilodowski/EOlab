@@ -11,6 +11,17 @@ import prepare_EOlab_layers as EO
 sys.path.append('/home/dmilodow/DataStore_DTM/FOREST2020/PotentialBiomass/src')
 import geospatial_utility_tools as geo
 
+# Get perceptionally uniform colourmaps
+sys.path.append('/home/dmilodow/DataStore_DTM/FOREST2020/EOdata/EO_data_processing/src/plot_EO_data/colormap/')
+import colormaps as cmaps
+plt.register_cmap(name='viridis', cmap=cmaps.viridis)
+plt.register_cmap(name='inferno', cmap=cmaps.inferno)
+plt.register_cmap(name='plasma', cmap=cmaps.plasma)
+plt.register_cmap(name='magma', cmap=cmaps.magma)
+plt.set_cmap(cmaps.viridis)
+
+
+# Start creating layers...
 DATADIR = '/disk/scratch/local.2/kenya_PFB/'
 SAVEDIR = '/home/dmilodow/DataStore_DTM/EOlaboratory/EOlab/KenyaPotentialAGB/'
 site = 'kenya'
