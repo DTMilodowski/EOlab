@@ -11,6 +11,16 @@ import prepare_EOlab_layers as EO
 sys.path.append('/home/dmilodow/DataStore_DTM/FOREST2020/PotentialBiomass/src')
 import geospatial_utility_tools as geo
 
+
+# Get perceptionally uniform colourmaps
+sys.path.append('/home/dmilodow/DataStore_DTM/FOREST2020/EOdata/EO_data_processing/src/plot_EO_data/colormap/')
+import colormaps as cmaps
+plt.register_cmap(name='viridis', cmap=cmaps.viridis)
+plt.register_cmap(name='inferno', cmap=cmaps.inferno)
+plt.register_cmap(name='plasma', cmap=cmaps.plasma)
+plt.register_cmap(name='magma', cmap=cmaps.magma)
+plt.set_cmap(cmaps.viridis)
+
 NetCDF_file = '/home/dmilodow/DataStore_GCEL/AGB/AGBregpot.nc'
 SAVEDIR = './'
 ds,geoTrans = EO.load_NetCDF(NetCDF_file,lat_var = 'lat', lon_var = 'lon')
