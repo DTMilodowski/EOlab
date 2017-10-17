@@ -21,23 +21,23 @@ plt.register_cmap(name='plasma', cmap=cmaps.plasma)
 plt.register_cmap(name='magma', cmap=cmaps.magma)
 plt.set_cmap(cmaps.viridis)
 
-DATADIR = '/disk/scratch/local.2/mexico_PFB/'
-SAVEDIR = '/home/dmilodow/DataStore_DTM/EOlaboratory/EOlab/MexicoPotentialAGB/'
-NetCDF_file = 'mexico_PFB.nc'
+DATADIR = '/disk/scratch/local.2/kenya_PFB/'
+SAVEDIR = '/home/dmilodow/DataStore_DTM/EOlaboratory/EOlab/KenyaPotentialAGB/'
+NetCDF_file = 'kenya_PFB.nc'
 
 ds,geoTrans = EO.load_NetCDF(DATADIR+NetCDF_file,lat_var = 'lat', lon_var = 'lon')
 resampling_scalar = 3.
-vars = ['AGB-MEX','AGBpot','forests']
+vars = ['Avitabile','AGBpot','forests']
 dataset, geoTrans = EO.resample_dataset(ds,geoTrans,vars,resampling_scalar)
 
-dataset['AGBreg'] = dataset['AGBpot']-dataset['AGB-MEX']
-dataset['AGBreg'][dataset['AGB-MEX']==-9999] = -9999.
+dataset['AGBreg'] = dataset['AGBpot']-dataset['Avitabile']
+dataset['AGBreg'][dataset['Avitabile']==-9999] = -9999.
 
-dataset['refpot'] = dataset['AGBpot']-dataset['AGB-MEX']
-dataset['refpot'][dataset['AGB-MEX']==-9999] = -9999.
+dataset['refpot'] = dataset['AGBpot']-dataset['Avitabile']
+dataset['refpot'][dataset['Avitabile']==-9999] = -9999.
 dataset['refpot'][dataset['forests']==1] = 0.
 
-vars = ['AGB-MEX','AGBpot','AGBreg','refpot','forests']
+vars = ['Avitabile','AGBpot','AGBreg','refpot','forests']
 cmaps = ['viridis','viridis','PRGn','inferno','viridis']
 ulims = [230.,230.,100.,100.,1.]
 llims = [0.,0.,-100.,0.,0.]
@@ -45,13 +45,13 @@ axis_labels = ['AGB$_{obs}$ / Mg(C) ha$^{-1}$', 'AGB$_{potential}$ / Mg(C) ha$^{
 
 for vv in range(0,len(vars)):
     print vars[vv]
-    file_prefix = SAVEDIR + 'mexico_' + vars[vv]
+    file_prefix = SAVEDIR + 'kenya_' + vars[vv]
 
     # delete existing dataset if present
-    if 'mexico_'+vars[vv]+'_data.tif' in os.listdir(SAVEDIR):
-        os.system("rm %s" % ('mexico_'+vars[vv]+'_data.tif'))
-    if 'mexico_'+vars[vv]+'_display.tif' in os.listdir(SAVEDIR):
-        os.system("rm %s" % ('mexico_'+vars[vv]+'_display.tif'))
+    if 'kenya_'+vars[vv]+'_data.tif' in os.listdir(SAVEDIR):
+        os.system("rm %s" % ('kenya_'+vars[vv]+'_data.tif'))
+    if 'kenya_'+vars[vv]+'_display.tif' in os.listdir(SAVEDIR):
+        os.system("rm %s" % ('kenya_'+vars[vv]+'_display.tif'))
 
     EO.write_array_to_display_layer_GeoTiff(dataset[vars[vv]], geoTrans, file_prefix, cmaps[vv], ulims[vv], llims[vv])
     EO.plot_legend(cmaps[vv],ulims[vv],llims[vv],axis_labels[vv], file_prefix)
@@ -65,7 +65,7 @@ areas = geo.calculate_cell_area_array(latitude,longitude, area_scalar = 1./10.**
 # loop through the variables, multiplying by cell areas to give values in Mg
 for vv in range(0,len(vars)):
     print vars[vv]
-    file_prefix = SAVEDIR + 'mexico_' + vars[vv] + '_total_data'
+    file_prefix = SAVEDIR + 'kenya_' + vars[vv] + '_total_data'
 
     out_array = dataset[vars[vv]] * areas
     out_array[dataset[vars[vv]]==-9999]=-9999  # not sure why np.asarray step is needed but gets the job done
@@ -76,5 +76,5 @@ for vv in range(0,len(vars)):
 # nodata values
 areas_out = areas.copy()
 areas_out[np.asarray(dataset[vars[0]])==-9999] = -9999
-area_file_prefix = SAVEDIR + 'mexico_cell_areas_data'
+area_file_prefix = SAVEDIR + 'kenya_cell_areas_data'
 EO.write_array_to_data_layer_GeoTiff(areas_out, geoTrans, area_file_prefix)
