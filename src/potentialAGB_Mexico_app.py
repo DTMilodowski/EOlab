@@ -37,10 +37,12 @@ dataset['refpot'] = dataset['AGBpot']-dataset['AGB-MEX']
 dataset['refpot'][dataset['AGB-MEX']==-9999] = -9999.
 dataset['refpot'][dataset['forests']==1] = 0.
 
+dataset['forests'][dataset['forests']!=0] = -9999.
+
 vars = ['AGB-MEX','AGBpot','AGBreg','refpot','forests']
 cmaps = ['viridis','viridis','PRGn','inferno','viridis']
-ulims = [230.,230.,100.,100.,1.]
-llims = [0.,0.,-100.,0.,0.]
+ulims = [120.,120.,50.,50.,1.]
+llims = [0.,0.,-50.,0.,0.]
 axis_labels = ['AGB$_{obs}$ / Mg(C) ha$^{-1}$', 'AGB$_{potential}$ / Mg(C) ha$^{-1}$', 'AGB deficit / Mg(C) ha$^{-1}$', 'Reforestation potential / Mg(C) ha$^{-1}$','Forest mask (1 = Forest)']
 
 for vv in range(0,len(vars)):
