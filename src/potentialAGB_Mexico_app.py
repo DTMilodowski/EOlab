@@ -51,9 +51,9 @@ for vv in range(0,len(vars)):
 
     # delete existing dataset if present
     if 'mexico_'+vars[vv]+'_data.tif' in os.listdir(SAVEDIR):
-        os.system("rm %s" % ('mexico_'+vars[vv]+'_data.tif'))
+        os.system("rm %s" % (SAVEDIR+'mexico_'+vars[vv]+'_data.tif'))
     if 'mexico_'+vars[vv]+'_display.tif' in os.listdir(SAVEDIR):
-        os.system("rm %s" % ('mexico_'+vars[vv]+'_display.tif'))
+        os.system("rm %s" % (SAVEDIR+'mexico_'+vars[vv]+'_display.tif'))
 
     EO.write_array_to_display_layer_GeoTiff(dataset[vars[vv]], geoTrans, file_prefix, cmaps[vv], ulims[vv], llims[vv])
     EO.plot_legend(cmaps[vv],ulims[vv],llims[vv],axis_labels[vv], file_prefix)
@@ -67,6 +67,10 @@ areas = geo.calculate_cell_area_array(latitude,longitude, area_scalar = 1./10.**
 # loop through the variables, multiplying by cell areas to give values in Mg
 for vv in range(0,len(vars)):
     print vars[vv]
+    
+    if 'mexico_'+vars[vv]+'_total_data.tif' in os.listdir(SAVEDIR):
+        os.system("rm %s" % (SAVEDIR+'mexico_'+vars[vv]+'_total_data.tif'))
+        
     file_prefix = SAVEDIR + 'mexico_' + vars[vv] + '_total_data'
 
     out_array = dataset[vars[vv]] * areas
@@ -78,5 +82,7 @@ for vv in range(0,len(vars)):
 # nodata values
 areas_out = areas.copy()
 areas_out[np.asarray(dataset[vars[0]])==-9999] = -9999
+if 'mexico_cell_areas_data.tif' in os.listdir(SAVEDIR):
+    os.system("rm %s" % (SAVEDIR+'mexico_cell_areas_data.tif'))
 area_file_prefix = SAVEDIR + 'mexico_cell_areas_data'
 EO.write_array_to_data_layer_GeoTiff(areas_out, geoTrans, area_file_prefix)
