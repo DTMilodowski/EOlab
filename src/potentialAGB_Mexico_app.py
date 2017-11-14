@@ -45,7 +45,7 @@ dataset['forests'][dataset['forests']!=1] = -9999.
 vars = ['AGB-MEX_mean','AGBpot_mean','seqpot_mean','forests']
 cmaps = ['viridis','viridis','plasma','viridis']
 ulims = [50.,50.,25.,1.]
-llims = [0.,0.,-50.,0.,0.]
+llims = [0.,0.,0.,0.]
 axis_labels = ['AGB$_{obs}$ / Mg(C) ha$^{-1}$', 'AGB$_{potential}$ / Mg(C) ha$^{-1}$', 'Sequestration potential / Mg(C) ha$^{-1}$', 'Forest mask (1 = Forest)']
 
 for vv in range(0,len(vars)):
@@ -76,7 +76,7 @@ for vv in range(0,len(vars)):
     file_prefix = SAVEDIR + 'mexico_' + vars[vv] + '_total_data'
 
     out_array = dataset[vars[vv]] * areas
-    out_array[dataset[vars[vv]]==-9999]=-9999  # not sure why np.asarray step is needed but gets the job done
+    out_array[dataset[vars[vv]]==-9999]=-9999
     EO.write_array_to_data_layer_GeoTiff(out_array, geoTrans, file_prefix)
     out_array=None
 
@@ -119,7 +119,7 @@ for vv in range(0,len(vars)):
     file_prefix = SAVEDIR + 'mexico_' + vars[vv] + '_total_data'
 
     out_array = dataset[vars[vv]] * areas
-    out_array[dataset[vars[vv]]==-9999]=-9999  # not sure why np.asarray step is needed but gets the job done
+    out_array[dataset[vars[vv]]==-9999]=-9999 
     EO.write_array_to_data_layer_GeoTiff(out_array, geoTrans, file_prefix)
     out_array=None
 
@@ -148,7 +148,7 @@ for vv in range(0,len(vars)):
     file_prefix = SAVEDIR + 'mexico_' + vars[vv] + '_total_data'
 
     out_array = dataset[vars[vv]] * areas
-    out_array[dataset[vars[vv]]==-9999]=-9999  # not sure why np.asarray step is needed but gets the job done
+    out_array[dataset[vars[vv]]==-9999]=-9999  
     EO.write_array_to_data_layer_GeoTiff(out_array, geoTrans, file_prefix)
     out_array=None
 """
