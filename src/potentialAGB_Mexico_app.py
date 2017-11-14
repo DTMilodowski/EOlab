@@ -73,7 +73,7 @@ for vv in range(0,len(vars)):
     if 'mexico_'+vars[vv]+'_total_data.tif' in os.listdir(SAVEDIR):
         os.system("rm %s" % (SAVEDIR+'mexico_'+vars[vv]+'_total_data.tif'))
         
-    file_prefix = SAVEDIR + 'mexico_' + vars[vv] + '_total_data'
+    file_prefix = SAVEDIR + 'mexico_' + vars[vv] + '_total'
 
     out_array = dataset[vars[vv]] * areas
     out_array[dataset[vars[vv]]==-9999]=-9999
