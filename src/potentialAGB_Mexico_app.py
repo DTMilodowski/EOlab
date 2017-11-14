@@ -21,29 +21,32 @@ plt.register_cmap(name='plasma', cmap=cmaps.plasma)
 plt.register_cmap(name='magma', cmap=cmaps.magma)
 plt.set_cmap(cmaps.viridis)
 
+plt.figure(1, facecolor='White',figsize=[2, 1])
+plt.show()
+
 DATADIR = '/disk/scratch/local.2/mexico_PFB/'
-SAVEDIR = '/home/dmilodow/DataStore_DTM/EOlaboratory/EOlab/MexicoPotentialAGB/'
-NetCDF_file = 'mexico_PFB.nc'
+SAVEDIR = '/home/dmilodow/DataStore_DTM/EOlaboratory/EOlab/MexicoPotentialAGB/v1.1/'
+NetCDF_file = 'mexico_PFB_mean.nc'
 
 ds,geoTrans = EO.load_NetCDF(DATADIR+NetCDF_file,lat_var = 'lat', lon_var = 'lon')
 resampling_scalar = 3.
-vars = ['AGB-MEX','AGBpot','forests']
+vars = ['AGB-MEX_mean','AGBpot_mean','forests']
 dataset, geoTrans = EO.resample_dataset(ds,geoTrans,vars,resampling_scalar)
 
-dataset['AGBreg'] = dataset['AGBpot']-dataset['AGB-MEX']
-dataset['AGBreg'][dataset['AGB-MEX']==-9999] = -9999.
-
-dataset['refpot'] = dataset['AGBpot']-dataset['AGB-MEX']
-dataset['refpot'][dataset['AGB-MEX']==-9999] = -9999.
-dataset['refpot'][dataset['forests']==1] = 0.
+# sequestration potential is defined by pixels with positive potential biomass that
+# are not already forests
+dataset['seqpot_mean'] = dataset['AGBpot_mean']-dataset['AGB-MEX_mean']
+dataset['seqpot_mean'][dataset['forests']==1] = 0.
+dataset['seqpot_mean'][dataset['seqpot_mean']<0] = 0.
+dataset['seqpot_mean'][dataset['AGB-MEX_mean']==-9999] = -9999.
 
 dataset['forests'][dataset['forests']!=1] = -9999.
 
-vars = ['AGB-MEX','AGBpot','AGBreg','refpot','forests']
-cmaps = ['viridis','viridis','PRGn','inferno','viridis']
-ulims = [100.,100.,50.,50.,1.]
+vars = ['AGB-MEX_mean','AGBpot_mean','seqpot_mean','forests']
+cmaps = ['viridis','viridis','plasma','viridis']
+ulims = [50.,50.,25.,1.]
 llims = [0.,0.,-50.,0.,0.]
-axis_labels = ['AGB$_{obs}$ / Mg(C) ha$^{-1}$', 'AGB$_{potential}$ / Mg(C) ha$^{-1}$', 'AGB deficit / Mg(C) ha$^{-1}$', 'Reforestation potential / Mg(C) ha$^{-1}$','Forest mask (1 = Forest)']
+axis_labels = ['AGB$_{obs}$ / Mg(C) ha$^{-1}$', 'AGB$_{potential}$ / Mg(C) ha$^{-1}$', 'Sequestration potential / Mg(C) ha$^{-1}$', 'Forest mask (1 = Forest)']
 
 for vv in range(0,len(vars)):
     print vars[vv]
@@ -58,7 +61,6 @@ for vv in range(0,len(vars)):
     EO.write_array_to_display_layer_GeoTiff(dataset[vars[vv]], geoTrans, file_prefix, cmaps[vv], ulims[vv], llims[vv])
     EO.plot_legend(cmaps[vv],ulims[vv],llims[vv],axis_labels[vv], file_prefix)
 
-# Now write the quantitative display layers to file.  These probide the 
 rows, cols = dataset[vars[0]].shape
 latitude = np.arange(geoTrans[3],rows*geoTrans[5]+geoTrans[3],geoTrans[5])
 longitude =  np.arange(geoTrans[0],cols*geoTrans[1]+geoTrans[0],geoTrans[1])
@@ -86,3 +88,67 @@ if 'mexico_cell_areas_data.tif' in os.listdir(SAVEDIR):
     os.system("rm %s" % (SAVEDIR+'mexico_cell_areas_data.tif'))
 area_file_prefix = SAVEDIR + 'mexico_cell_areas_data'
 EO.write_array_to_data_layer_GeoTiff(areas_out, geoTrans, area_file_prefix)
+
+
+
+"""
+# Finally, we also want to write quantitative display layers for the maximum and minimum biomass,
+# potential biomass and sequestration potential so that we can define uncertainy boundaries.
+NetCDF_file = 'mexico_PFB_lower.nc'
+ds,geoTrans = EO.load_NetCDF(DATADIR+NetCDF_file,lat_var = 'lat', lon_var = 'lon')
+resampling_scalar = 3.
+vars = ['AGB-MEX_lower','AGBpot_lower','forests']
+dataset, geoTrans = EO.resample_dataset(ds,geoTrans,vars,resampling_scalar)
+
+# sequestration potential is defined by pixels with positive potential biomass that
+# are not already forests
+dataset['seqpot_lower'] = dataset['AGBpot_lower']-dataset['AGB-MEX_lower']
+dataset['seqpot_lower'][dataset['AGB-MEX_lower']==-9999] = -9999.
+dataset['seqpot_lower'][dataset['forests']==1] = 0.
+dataset['seqpot_lower'][dataset['seqpot_lower']<0] = 0.
+
+dataset['forests'][dataset['forests']!=1] = -9999.
+
+vars = ['AGB-MEX_lower','AGBpot_lower','seqpot_lower']
+for vv in range(0,len(vars)):
+    print vars[vv]
+    
+    if 'mexico_'+vars[vv]+'_total_data.tif' in os.listdir(SAVEDIR):
+        os.system("rm %s" % (SAVEDIR+'mexico_'+vars[vv]+'_total_data.tif'))
+        
+    file_prefix = SAVEDIR + 'mexico_' + vars[vv] + '_total_data'
+
+    out_array = dataset[vars[vv]] * areas
+    out_array[dataset[vars[vv]]==-9999]=-9999  # not sure why np.asarray step is needed but gets the job done
+    EO.write_array_to_data_layer_GeoTiff(out_array, geoTrans, file_prefix)
+    out_array=None
+
+NetCDF_file = 'mexico_PFB_upper.nc'
+ds,geoTrans = EO.load_NetCDF(DATADIR+NetCDF_file,lat_var = 'lat', lon_var = 'lon')
+resampling_scalar = 3.
+vars = ['AGB-MEX_upper','AGBpot_upper','forests']
+dataset, geoTrans = EO.resample_dataset(ds,geoTrans,vars,resampling_scalar)
+
+# sequestration potential is defined by pixels with positive potential biomass that
+# are not already forests
+dataset['seqpot_upper'] = dataset['AGBpot_upper']-dataset['AGB-MEX_upper']
+dataset['seqpot_upper'][dataset['AGB-MEX_upper']==-9999] = -9999.
+dataset['seqpot_upper'][dataset['forests']==1] = 0.
+dataset['seqpot_upper'][dataset['seqpot_upper']<0] = 0.
+
+dataset['forests'][dataset['forests']!=1] = -9999.
+
+vars = ['AGB-MEX_upper','AGBpot_upper','seqpot_upper']
+for vv in range(0,len(vars)):
+    print vars[vv]
+    
+    if 'mexico_'+vars[vv]+'_total_data.tif' in os.listdir(SAVEDIR):
+        os.system("rm %s" % (SAVEDIR+'mexico_'+vars[vv]+'_total_data.tif'))
+        
+    file_prefix = SAVEDIR + 'mexico_' + vars[vv] + '_total_data'
+
+    out_array = dataset[vars[vv]] * areas
+    out_array[dataset[vars[vv]]==-9999]=-9999  # not sure why np.asarray step is needed but gets the job done
+    EO.write_array_to_data_layer_GeoTiff(out_array, geoTrans, file_prefix)
+    out_array=None
+"""
