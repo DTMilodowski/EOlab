@@ -45,6 +45,11 @@ ulims = [50.,50.,25.,1.]
 llims = [0.,0.,0.,0.]
 axis_labels = ['AGB$_{obs}$ / Mg(C) ha$^{-1}$', 'AGB$_{potential}$ / Mg(C) ha$^{-1}$', 'Sequestration potential / Mg(C) ha$^{-1}$','Forest mask (1 = Forest)']
 
+
+plt.figure(1, facecolor='White',figsize=[2, 1])
+plt.show()
+
+
 for vv in range(0,len(vars)):
     print vars[vv]
     file_prefix = SAVEDIR + 'kenya_' + vars[vv]
