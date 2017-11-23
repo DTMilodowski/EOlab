@@ -30,18 +30,20 @@ resampling_scalar = 3.
 vars = ['Avitabile','AGBpot','forests']
 dataset, geoTrans = EO.resample_dataset(ds,geoTrans,vars,resampling_scalar)
 
-dataset['AGBreg'] = dataset['AGBpot']-dataset['Avitabile']
-dataset['AGBreg'][dataset['Avitabile']==-9999] = -9999.
+# sequestration potential is defined by pixels with positive potential biomass that
+# are not already forests
+dataset['seqpot'] = dataset['AGBpot']-dataset['Avitabile']
+dataset['seqpot'][dataset['forests']==1] = 0.
+dataset['seqpot'][dataset['seqpot']<0] = 0.
+dataset['seqpot'][dataset['Avitabile']==-9999] = -9999.
 
-dataset['refpot'] = dataset['AGBpot']-dataset['Avitabile']
-dataset['refpot'][dataset['Avitabile']==-9999] = -9999.
-dataset['refpot'][dataset['forests']==1] = 0.
+dataset['forests'][dataset['forests']!=1] = -9999.
 
-vars = ['Avitabile','AGBpot','AGBreg','refpot','forests']
-cmaps = ['viridis','viridis','PRGn','inferno','viridis']
-ulims = [230.,230.,100.,100.,1.]
-llims = [0.,0.,-100.,0.,0.]
-axis_labels = ['AGB$_{obs}$ / Mg(C) ha$^{-1}$', 'AGB$_{potential}$ / Mg(C) ha$^{-1}$', 'AGB deficit / Mg(C) ha$^{-1}$', 'Reforestation potential / Mg(C) ha$^{-1}$','Forest mask (1 = Forest)']
+vars = ['Avitabile','AGBpot','seqpot','forests']
+cmaps = ['viridis','viridis','plasma','viridis']
+ulims = [50.,50.,25.,1.]
+llims = [0.,0.,0.,0.]
+axis_labels = ['AGB$_{obs}$ / Mg(C) ha$^{-1}$', 'AGB$_{potential}$ / Mg(C) ha$^{-1}$', 'Sequestration potential / Mg(C) ha$^{-1}$','Forest mask (1 = Forest)']
 
 for vv in range(0,len(vars)):
     print vars[vv]
@@ -65,7 +67,7 @@ areas = geo.calculate_cell_area_array(latitude,longitude, area_scalar = 1./10.**
 # loop through the variables, multiplying by cell areas to give values in Mg
 for vv in range(0,len(vars)):
     print vars[vv]
-    file_prefix = SAVEDIR + 'kenya_' + vars[vv] + '_total_data'
+    file_prefix = SAVEDIR + 'kenya_' + vars[vv] + '_total'
 
     out_array = dataset[vars[vv]] * areas
     out_array[dataset[vars[vv]]==-9999]=-9999  # not sure why np.asarray step is needed but gets the job done
@@ -76,5 +78,5 @@ for vv in range(0,len(vars)):
 # nodata values
 areas_out = areas.copy()
 areas_out[np.asarray(dataset[vars[0]])==-9999] = -9999
-area_file_prefix = SAVEDIR + 'kenya_cell_areas_data'
+area_file_prefix = SAVEDIR + 'kenya_cell_areas'
 EO.write_array_to_data_layer_GeoTiff(areas_out, geoTrans, area_file_prefix)
