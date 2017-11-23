@@ -86,7 +86,7 @@ areas_out = areas.copy()
 areas_out[np.asarray(dataset[vars[0]])==-9999] = -9999
 if 'mexico_cell_areas_data.tif' in os.listdir(SAVEDIR):
     os.system("rm %s" % (SAVEDIR+'mexico_cell_areas_data.tif'))
-area_file_prefix = SAVEDIR + 'mexico_cell_areas_data'
+area_file_prefix = SAVEDIR + 'mexico_cell_areas'
 EO.write_array_to_data_layer_GeoTiff(areas_out, geoTrans, area_file_prefix)
 
 
