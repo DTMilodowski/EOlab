@@ -36,6 +36,10 @@ dataset['seqpot'] = dataset['AGBpot']-dataset['Avitabile']
 dataset['seqpot'][dataset['forests']==1] = 0.
 dataset['seqpot'][dataset['seqpot']<0] = 0.
 dataset['seqpot'][dataset['Avitabile']==-9999] = -9999.
+dataset['seqpot'][dataset['AGBpot']==-9999] = -9999.
+
+dataset['AGBpot'][dataset['Avitabile']==-9999] = -9999.
+dataset['Avitabile'][dataset['AGBpot']==-9999] = -9999.
 
 dataset['forests'][dataset['forests']!=1] = -9999.
 
