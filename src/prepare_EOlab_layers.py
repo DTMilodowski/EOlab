@@ -296,5 +296,5 @@ def plot_legend(cmap,ulim,llim,axis_label, OUTFILE_prefix):
     cb.set_label(axis_label,fontsize = axis_size)
     plt.tight_layout()
     plt.savefig(OUTFILE_prefix+'_legend.png')
-    plt.show()
+    #plt.show()
     return 0
