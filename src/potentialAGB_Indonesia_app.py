@@ -44,13 +44,13 @@ dataset['forests'][dataset['forests']!=1] = -9999.
 
 vars = ['AGB_mean','AGBpot_mean','seqpot_mean','forests']
 cmaps = ['viridis','viridis','plasma','viridis']
-ulims = [50.,50.,25.,1.]
+ulims = [200.,200.,100.,1.]
 llims = [0.,0.,0.,0.]
 axis_labels = ['AGB$_{obs}$ / Mg(C) ha$^{-1}$', 'AGB$_{potential}$ / Mg(C) ha$^{-1}$', 'Sequestration potential / Mg(C) ha$^{-1}$', 'Forest mask (1 = Forest)']
 
 for vv in range(0,len(vars)):
     print vars[vv]
-    file_prefix = SAVEDIR + 'mexico_' + vars[vv]
+    file_prefix = SAVEDIR + 'se_asia_' + vars[vv]
 
     # delete existing dataset if present
     if 'se_asia_'+vars[vv]+'_data.tif' in os.listdir(SAVEDIR):
