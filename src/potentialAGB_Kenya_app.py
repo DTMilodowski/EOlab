@@ -34,7 +34,7 @@ dataset, geoTrans = EO.resample_dataset(ds,geoTrans,vars,resampling_scalar)
 # are not already forests
 dataset['seqpot_mean'] = dataset['AGBpot_mean']-dataset['AGB_mean']
 dataset['seqpot_mean'][dataset['forests']==1] = 0.
-dataset['seqpot_mean'][dataset['seqpot']<0] = 0.
+dataset['seqpot_mean'][dataset['seqpot_mean']<0] = 0.
 dataset['seqpot_mean'][dataset['AGB_mean']==-9999] = -9999.
 dataset['seqpot_mean'][dataset['AGBpot_mean']==-9999] = -9999.
 
