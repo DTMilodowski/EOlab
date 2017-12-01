@@ -25,8 +25,8 @@ plt.figure(1, facecolor='White',figsize=[2, 1])
 plt.show()
 
 DATADIR = '/disk/scratch/local.2/mexico_PFB/'
-SAVEDIR = '/home/dmilodow/DataStore_DTM/EOlaboratory/EOlab/MexicoPotentialAGB/v1.1/'
-NetCDF_file = 'mexico_PFB_mean.nc'
+SAVEDIR = '/home/dmilodow/DataStore_DTM/EOlaboratory/EOlab/MexicoPotentialAGB/'
+NetCDF_file = 'mexico_PFB_mean_WorldClim2.nc'
 
 ds,geoTrans = EO.load_NetCDF(DATADIR+NetCDF_file,lat_var = 'lat', lon_var = 'lon')
 resampling_scalar = 3.
