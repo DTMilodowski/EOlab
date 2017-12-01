@@ -23,27 +23,27 @@ plt.set_cmap(cmaps.viridis)
 
 DATADIR = '/disk/scratch/local.2/kenya_PFB/'
 SAVEDIR = '/home/dmilodow/DataStore_DTM/EOlaboratory/EOlab/KenyaPotentialAGB/'
-NetCDF_file = 'kenya_PFB.nc'
+NetCDF_file = 'kenya_ODA_PFB_mean_threshold_WorldClim2.nc'
 
 ds,geoTrans = EO.load_NetCDF(DATADIR+NetCDF_file,lat_var = 'lat', lon_var = 'lon')
 resampling_scalar = 3.
-vars = ['Avitabile','AGBpot','forests']
+vars = ['AGB_mean','AGBpot_mean','forests']
 dataset, geoTrans = EO.resample_dataset(ds,geoTrans,vars,resampling_scalar)
 
 # sequestration potential is defined by pixels with positive potential biomass that
 # are not already forests
-dataset['seqpot'] = dataset['AGBpot']-dataset['Avitabile']
-dataset['seqpot'][dataset['forests']==1] = 0.
-dataset['seqpot'][dataset['seqpot']<0] = 0.
-dataset['seqpot'][dataset['Avitabile']==-9999] = -9999.
-dataset['seqpot'][dataset['AGBpot']==-9999] = -9999.
+dataset['seqpot_mean'] = dataset['AGBpot_mean']-dataset['AGB_mean']
+dataset['seqpot_mean'][dataset['forests']==1] = 0.
+dataset['seqpot_mean'][dataset['seqpot']<0] = 0.
+dataset['seqpot_mean'][dataset['AGB_mean']==-9999] = -9999.
+dataset['seqpot_mean'][dataset['AGBpot_mean']==-9999] = -9999.
 
-dataset['AGBpot'][dataset['Avitabile']==-9999] = -9999.
-dataset['Avitabile'][dataset['AGBpot']==-9999] = -9999.
+dataset['AGBpot_mean'][dataset['AGB_mean']==-9999] = -9999.
+dataset['AGB_mean'][dataset['AGBpot_mean']==-9999] = -9999.
 
 dataset['forests'][dataset['forests']!=1] = -9999.
 
-vars = ['Avitabile','AGBpot','seqpot','forests']
+vars = ['AGB_mean','AGBpot_mean','seqpot_mean','forests']
 cmaps = ['viridis','viridis','plasma','viridis']
 ulims = [50.,50.,25.,1.]
 llims = [0.,0.,0.,0.]
