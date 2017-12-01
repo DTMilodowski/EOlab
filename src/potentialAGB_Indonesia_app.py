@@ -26,7 +26,7 @@ plt.show()
 
 DATADIR = '/disk/scratch/local.2/southeast_asia_PFB/'
 SAVEDIR = '/home/dmilodow/DataStore_DTM/EOlaboratory/EOlab/IndonesiaPotentialAGB/v1.0/'
-NetCDF_file = 'southeast_asia_PFB_mean.nc'
+NetCDF_file = 'southeast_asia_PFB_mean_WorldClim2.nc'
 
 ds,geoTrans = EO.load_NetCDF(DATADIR+NetCDF_file,lat_var = 'lat', lon_var = 'lon')
 resampling_scalar = 3.
