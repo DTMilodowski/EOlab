@@ -29,20 +29,20 @@ axis_size = rcParams['font.size']
 # been separated out into a separate function
 def load_NetCDF(NetCDF_file,lat_var = 'lat', lon_var = 'lon'):
     dataset = Dataset(NetCDF_file)
-    
+
     # Get the spatial information from the layer
     Lat = dataset.variables[lat_var][:]
     Long = dataset.variables[lon_var][:]
     DataResX = np.abs(Long[0]-Long[1])
     DataResY = np.abs(Lat[0]-Lat[1])
-    
+
     XMinimum = np.min(Long)-DataResX/2.
     YMinimum = np.min(Lat)-DataResY/2.
     YMaximum = np.max(Lat)+DataResY/2.
 
     #geoTransform = [ XMinimum, DataResX, 0, YMinimum, 0, DataResY ]
     geoTransform = [ XMinimum, DataResX, 0, YMaximum, 0, -DataResY ]
-    
+
     return dataset, geoTransform
 
 # A function to resample an array to a higher resolution.  The resampling is specified using an scalar,
@@ -53,25 +53,25 @@ def load_NetCDF(NetCDF_file,lat_var = 'lat', lon_var = 'lon'):
 def resample_dataset(dataset,geoTransform,vars,resampling_scalar):
     ds = {}
     for vv in range(0,len(vars)):
-        print vars[vv]
+        print(vars[vv])
         ds[vars[vv]], geoTrans = resample_array(np.asarray(dataset.variables[vars[vv]]),geoTransform,resampling_scalar)
     return ds, geoTrans
 
 def resample_array(array,geoTransform,resampling_scalar):
-    rs = resampling_scalar    
+    rs = resampling_scalar
     rows,cols = array.shape
     array_temp = np.zeros((rows*rs,cols*rs))
 
     # Fill the new array with the original values
     array_temp[::rs,::rs] = array
 
-    # Define the convolution kernel           
+    # Define the convolution kernel
     kernel_1d = scipy.signal.boxcar(rs)
     kernel_2d = np.outer(kernel_1d, kernel_1d)
 
     # Apply the kernel by convolution, seperately in each axis
     array_out = scipy.signal.convolve(array_temp, kernel_2d, mode="same")
-    
+
     #for ii in range(0,rows):
     #    for jj in range(0,cols):
     #        array_out[ii*rs:(ii+1)*rs,jj*rs:(jj+1)*rs]=array[ii,jj]
@@ -81,21 +81,21 @@ def resample_array(array,geoTransform,resampling_scalar):
 # Function to load a GeoTIFF band plus georeferencing information.  Only loads one band,
 # which is band 1 by default
 def load_GeoTIFF_band_and_georeferencing(File,band_number=1):
-    
+
     driver = gdal.GetDriverByName('GTiff')
     driver.Register()
 
     try:
         ds = gdal.Open(File)
-    except RuntimeError, e:
-        print 'unable to open ' + File
-        print e
+    except (RuntimeError, e):
+        print ('unable to open ' + File)
+        print (e)
         sys.exit(1)
-        
+
     source_band = ds.GetRasterBand(band_number)
     if source_band is None:
-        print "BAND MISSING"
-        sys.exit(1)  
+        print( "BAND MISSING")
+        sys.exit(1)
 
     array = np.array(ds.GetRasterBand(band_number).ReadAsArray(),dtype=np.float64)
     geoTrans = ds.GetGeoTransform()
@@ -105,7 +105,7 @@ def load_GeoTIFF_band_and_georeferencing(File,band_number=1):
 
 
 # Convert a python array with float variables into a three-band RGB array with the colours specified
-# according to a given colormap and upper and lower limits to the colormap 
+# according to a given colormap and upper and lower limits to the colormap
 def convert_array_to_rgb(array, cmap, ulim, llim, nodatavalue=-9999):
     norm = mpl.colors.Normalize(vmin=llim, vmax=ulim)
     rgb_array= cm.ScalarMappable(norm=norm,cmap=cmap).to_rgba(array)[:,:,:-1]*255
@@ -125,9 +125,9 @@ def write_array_to_data_layer_GeoTiff(array,geoTrans, OUTFILE_prefix, EPSG_CODE=
             geoTrans[5]*=-1
             geoTrans[3] = geoTrans[3]-(array.shape[0]+1.)*geoTrans[5]
         # Get array dimensions and flip so that it plots in the correct orientation on GIS platforms
-        if len(array.shape) < 2: 
-            print 'array has less than two dimensions! Unable to write to raster'
-            sys.exit(1)  
+        if len(array.shape) < 2:
+            print('array has less than two dimensions! Unable to write to raster')
+            sys.exit(1)
         elif len(array.shape) == 2:
             (NRows,NCols) = array.shape
             array = np.flipud(array)
@@ -136,8 +136,8 @@ def write_array_to_data_layer_GeoTiff(array,geoTrans, OUTFILE_prefix, EPSG_CODE=
             for i in range(0,NBands):
                 array[:,:,i] = np.flipud(array[:,:,i])
         else:
-            print 'array has too many dimensions! Unable to write to raster'
-            sys.exit(1)  
+            print('array has too many dimensions! Unable to write to raster')
+            sys.exit(1)
 
     else:
         # for north_up array, need the n-s resolution (element 5) to be positive
@@ -145,9 +145,9 @@ def write_array_to_data_layer_GeoTiff(array,geoTrans, OUTFILE_prefix, EPSG_CODE=
             geoTrans[5]*=-1
             geoTrans[3] = geoTrans[3]-(array.shape[0]+1.)*geoTrans[5]
         # Get array dimensions and flip so that it plots in the correct orientation on GIS platforms
-        if len(array.shape) < 2: 
-            print 'array has less than two dimensions! Unable to write to raster'
-            sys.exit(1)  
+        if len(array.shape) < 2:
+            print('array has less than two dimensions! Unable to write to raster')
+            sys.exit(1)
         elif len(array.shape) == 2:
             (NRows,NCols) = array.shape
             array = np.flipud(array)
@@ -156,13 +156,13 @@ def write_array_to_data_layer_GeoTiff(array,geoTrans, OUTFILE_prefix, EPSG_CODE=
             for i in range(0,NBands):
                 array[:,:,i] = np.flipud(array[:,:,i])
         else:
-            print 'array has too many dimensions! Unable to write to raster'
-            sys.exit(1)  
-    
+            print ('array has too many dimensions! Unable to write to raster')
+            sys.exit(1)
+
     # Get array dimensions and flip so that it plots in the correct orientation on GIS platforms
-    if len(array.shape) < 2: 
-        print 'array has less than two dimensions! Unable to write to raster'
-        sys.exit(1)  
+    if len(array.shape) < 2:
+        print ('array has less than two dimensions! Unable to write to raster')
+        sys.exit(1)
     elif len(array.shape) == 2:
         (NRows,NCols) = array.shape
         array = np.flipud(array)
@@ -171,9 +171,9 @@ def write_array_to_data_layer_GeoTiff(array,geoTrans, OUTFILE_prefix, EPSG_CODE=
         for i in range(0,NBands):
             array[:,:,i] = np.flipud(array[:,:,i])
     else:
-        print 'array has too many dimensions! Unable to write to raster'
-        sys.exit(1)  
-    
+        print ('array has too many dimensions! Unable to write to raster')
+        sys.exit(1)
+
     # Write GeoTiff
     driver = gdal.GetDriverByName('GTiff')
     driver.Register()
@@ -206,15 +206,15 @@ def write_array_to_display_layer_GeoTiff(array, geoTrans, OUTFILE_prefix, cmap, 
             geoTrans[5]*=-1
             geoTrans[3] = geoTrans[3]-(array.shape[0]+1.)*geoTrans[5]
         # Get array dimensions and flip so that it plots in the correct orientation on GIS platforms
-        if len(array.shape) < 2: 
-            print 'array has less than two dimensions! Unable to write to raster'
-            sys.exit(1)  
+        if len(array.shape) < 2:
+            print ('array has less than two dimensions! Unable to write to raster')
+            sys.exit(1)
         elif len(array.shape) == 2:
             (NRows,NCols) = array.shape
             array = np.flipud(array)
         else:
-            print 'array has too many dimensions! Unable to write to raster'
-            sys.exit(1)  
+            print ('array has too many dimensions! Unable to write to raster')
+            sys.exit(1)
 
     else:
         # for north_up array, need the n-s resolution (element 5) to be positive
@@ -222,32 +222,32 @@ def write_array_to_display_layer_GeoTiff(array, geoTrans, OUTFILE_prefix, cmap, 
             geoTrans[5]*=-1
             geoTrans[3] = geoTrans[3]-(array.shape[0]+1.)*geoTrans[5]
         # Get array dimensions and flip so that it plots in the correct orientation on GIS platforms
-        if len(array.shape) < 2: 
-            print 'array has less than two dimensions! Unable to write to raster'
-            sys.exit(1)  
+        if len(array.shape) < 2:
+            print('array has less than two dimensions! Unable to write to raster')
+            sys.exit(1)
         elif len(array.shape) == 2:
             (NRows,NCols) = array.shape
             array = np.flipud(array)
         else:
-            print 'array has too many dimensions! Unable to write to raster'
-            sys.exit(1)  
-    
+            print ('array has too many dimensions! Unable to write to raster')
+            sys.exit(1)
+
 
     # Get array dimensions and flip so that it plots in the correct orientation on GIS platforms
-    if len(array.shape) < 2: 
-        print 'array has less than two dimensions! Unable to write to raster'
-        sys.exit(1)  
+    if len(array.shape) < 2:
+        print('array has less than two dimensions! Unable to write to raster')
+        sys.exit(1)
     elif len(array.shape) == 2:
         (NRows,NCols) = array.shape
         array = np.flipud(array)
     else:
-        print 'array has too many dimensions! Unable to write to raster'
-        sys.exit(1)  
+        print ('array has too many dimensions! Unable to write to raster')
+        sys.exit(1)
 
     # Convert RGB array
     rgb_array = convert_array_to_rgb(array,cmap,ulim,llim)
-    
-    
+
+
     # Write Data Layer GeoTiff
     driver = gdal.GetDriverByName('GTiff')
     driver.Register()
@@ -280,16 +280,16 @@ def write_array_to_display_layer_GeoTiff(array, geoTrans, OUTFILE_prefix, cmap, 
 
     # now use gdalwarp to reproject
     os.system("gdalwarp -t_srs EPSG:" + EPSG_CODE_DISPLAY + " temp.tif " + OUTFILE_prefix+'_display.tif')
-    os.system("rm temp.tif")    
+    os.system("rm temp.tif")
     return 0
 
 
 # A function to produce a simple map legend for quantitative data layers
-def plot_legend(cmap,ulim,llim,axis_label, OUTFILE_prefix):
+def plot_legend(cmap,ulim,llim,axis_label, OUTFILE_prefix,extend='neither'):
     norm = mpl.colors.Normalize(vmin=llim, vmax=ulim)
     plt.figure(1, facecolor='White',figsize=[2, 1])
     ax = plt.subplot2grid((1,1),(0,0))
-    cb = mpl.colorbar.ColorbarBase(ax,cmap=cmap,norm=norm,orientation='horizontal')
+    cb = mpl.colorbar.ColorbarBase(ax,cmap=cmap,norm=norm,orientation='horizontal',extend=extend)
     tick_locator = ticker.MaxNLocator(nbins=5)
     cb.locator = tick_locator
     cb.update_ticks()
