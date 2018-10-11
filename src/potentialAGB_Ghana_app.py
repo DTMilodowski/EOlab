@@ -42,7 +42,7 @@ plt.show()
 
 DATADIR = '/home/dmilodow/DataStore_DTM/FOREST2020/PotentialBiomassV2/output/'
 SAVEDIR = '/home/dmilodow/DataStore_DTM/EOlaboratory/EOlab/GhanaPotentialAGB/'
-NetCDF_file = 'EAFR_v002_AGBpot_mean_WC2_SOILGRIDS_GridSearch.nc'
+NetCDF_file = 'WAFR_v003_AGBpot_mean_WC2_SOILGRIDS_GridSearch.nc'
 
 ds,geoTrans = EO.load_NetCDF(DATADIR+NetCDF_file,lat_var = 'lat', lon_var = 'lon')
 lat = np.asarray(ds.variables['lat'])
@@ -128,7 +128,7 @@ for vv in range(0,len(vars)):
         os.system("rm %s" % (SAVEDIR+'ghana_'+vars[vv]+'_display.tif'))
 
     EO.write_array_to_display_layer_GeoTiff(dataset[vars[vv]], geoTrans, file_prefix, cmaps[vv], ulims[vv], llims[vv])
-    if vars!='training':
+    if vars[vv]!='training':
         EO.plot_legend(cmaps[vv],ulims[vv],llims[vv],axis_labels[vv], file_prefix,extend='max')
 
 """
@@ -149,7 +149,7 @@ for vv in range(0,len(vars)):
 
     out_array = dataset[vars[vv]] * dataset['areas']
     out_array[dataset[vars[vv]]==-9999]=-9999
-    EO.write_array_to_data_layer_GeoTiff(out_array, geoTrans_rs, file_prefix)
+    EO.write_array_to_data_layer_GeoTiff(out_array, geoTrans, file_prefix)
     out_array=None
 
 # Also want to write cell areas to file.  However, as this will be compared against other layers, need to carry across
@@ -159,4 +159,4 @@ areas_out[np.asarray(dataset[vars[0]])==-9999] = -9999
 if 'ghana_cell_areas_data.tif' in os.listdir(SAVEDIR):
     os.system("rm %s" % (SAVEDIR+'ghana_cell_areas_data.tif'))
 area_file_prefix = SAVEDIR + 'ghana_cell_areas'
-EO.write_array_to_data_layer_GeoTiff(areas_out, geoTrans_rs, area_file_prefix)
+EO.write_array_to_data_layer_GeoTiff(areas_out, geoTrans, area_file_prefix)
