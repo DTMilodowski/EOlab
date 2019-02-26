@@ -287,13 +287,35 @@ def write_array_to_display_layer_GeoTiff(array, geoTrans, OUTFILE_prefix, cmap, 
 # A function to produce a simple map legend for quantitative data layers
 def plot_legend(cmap,ulim,llim,axis_label, OUTFILE_prefix,extend='neither'):
     norm = mpl.colors.Normalize(vmin=llim, vmax=ulim)
-    plt.figure(1, facecolor='White',figsize=[2, 1])
+    #plt.figure(1, facecolor='White',figsize=[2, 1])
+    fig,ax = plt.subplots(facecolor='White',figsize=[2, 1])
     ax = plt.subplot2grid((1,1),(0,0))
     cb = mpl.colorbar.ColorbarBase(ax,cmap=cmap,norm=norm,orientation='horizontal',extend=extend)
     tick_locator = ticker.MaxNLocator(nbins=5)
     cb.locator = tick_locator
     cb.update_ticks()
     cb.set_label(axis_label,fontsize = axis_size)
+    plt.tight_layout()
+    plt.savefig(OUTFILE_prefix+'_legend.png')
+    #plt.show()
+    return 0
+
+
+def plot_legend_listed(cmap,labels,axis_label, OUTFILE_prefix):
+    bounds = np.arange(len(labels)+1)
+    norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
+    #plt.figure(1, facecolor='White',figsize=[1.5, 1])
+    fig,ax = plt.subplots(facecolor='White',figsize=[1.5, 1])
+    ax = plt.subplot2grid((1,1),(0,0))
+    cb = mpl.colorbar.ColorbarBase(ax,cmap=cmap,norm=norm,
+                                orientation='vertical')
+    n_class = labels.size
+    loc = np.arange(0,n_class)+0.5
+    cb.set_ticks(loc)
+    cb.set_ticklabels(labels)
+    cb.update_ticks()
+
+    ax.set_title(axis_label,fontsize = axis_size)
     plt.tight_layout()
     plt.savefig(OUTFILE_prefix+'_legend.png')
     #plt.show()
