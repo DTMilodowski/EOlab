@@ -51,23 +51,23 @@ from  input_arguments_ghana import country,outfileID, DATADIR, SAVEDIR, NetCDF_f
 ## IMPORT PACKAGES
 import numpy as np
 import pandas as pd
-import os as os
-import sys as sys
+import os
+import sys
 
 # Plotting libraries
 import matplotlib as mpl
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap as ListedColormap
+from matplotlib.colors import ListedColormap
 import seaborn as sns
 plt.cla()
 
 # GIS libraries
 import xarray as xr
-import geopandas as geopandas
+import geopandas
 from geopandas.tools import sjoin
-from cartopy.io.shapereader import Reader as Reader
-from shapely.geometry import Point as Point
+from cartopy.io.shapereader import Reader
+from shapely.geometry import Point
 
 # custom libraries
 sys.path.append('../')
@@ -77,6 +77,7 @@ import prepare_EOlab_layers as EO
 colours = np.asarray(['#46E900','#1A2BCE'])
 training_labels = np.asarray(['initial','supplementary'])
 training_cmap = ListedColormap(sns.color_palette(colours).as_hex())
+plt.register_cmap(name='training_cmap', cmap=training_cmap)
 
 ## READ IN DATA
 ds = xr.open_dataset('%s%s' % (DATADIR,NetCDF_file))
