@@ -18,34 +18,8 @@ If the "country" option is specified as "None", then by default no clipping of
 the data will be undertaken, otherwise the data will be clipped to the national
 boundaries of the specified country.
 """
-"""
-## INPUT ARGUMENTS
-country = 'Colombia'
-outfileID = 'colombia' # this is to use as a prefix on the final tiff files produced
-DATADIR = '/home/dmilodow/DataStore_DTM/FOREST2020/PotentialBiomassRFR/output/'
-SAVEDIR = '/home/dmilodow/DataStore_DTM/EOlaboratory/EOlab/ColombiaPotentialAGB/'
-NetCDF_file = 'COL_003_AGB_potential_RFR_worldclim_soilgrids.nc'
-
-ne_shp = "/home/dmilodow/DataStore_DTM/EOlaboratory/Areas/NaturalEarth/10m_cultural/ne_10m_admin_0_countries.shp"
-
-# original estimates of AGB are for biomass. To convert to carbon, multiply by
-# Cscale. Leave Cscale = 1 for output in biomass units rather than carbon, for which use 0.5 or similar
-Cscale = 0.5
-
-# which variables will we produce layers for?
-# Options: 'AGB_mean','AGBpot_mean','AGBseq','AGBdef','training'
-map_vars = ['AGBobs', 'AGBpot', 'AGBseq','AGBdef','training']
-cmaps =    ['viridis','viridis','plasma','bwr_r', 'training_cmap']
-ulims =    [200.,      200.,     150.,    150,     2.]
-llims =    [0.,        0.,       0.,      -150,    0]
-axis_labels = [ 'AGB$_{obs}$ / Mg(C) ha$^{-1}$',
-                'AGB$_{potential}$ / Mg(C) ha$^{-1}$',
-                'Sequestration potential / Mg(C) ha$^{-1}$',
-                'AGB$_{deficit}$ / Mg(C) ha$^{-1}$',
-                'Training set']
-"""
 ## READ INPUT ARGUMENTS
-from  input_arguments_ghana import country,outfileID, DATADIR, SAVEDIR, NetCDF_file, ne_shp,\
+from  input_arguments_brazil import country,outfileID, DATADIR, SAVEDIR, NetCDF_file, ne_shp,\
                                     Cscale, map_vars,cmaps,ulims,llims,axis_labels
 
 ## IMPORT PACKAGES
@@ -187,8 +161,10 @@ for vv in range(0,len(map_vars)):
     plt.cla()
     if map_vars[vv]=='training':
         EO.plot_legend_listed(training_cmap,training_labels,axis_labels[vv], file_prefix)
+    elif map_vars[vv]=='AGBdef':
+        EO.plot_legend(cmaps[vv],ulims[vv],llims[vv],axis_labels[vv], file_prefix,extend='both')
     else:
-        EO.plot_legend(cmaps[vv],ulims[vv],llims[vv],axis_labels[vv], file_prefix)
+        EO.plot_legend(cmaps[vv],ulims[vv],llims[vv],axis_labels[vv], file_prefix,extend='max')
 
     # multiply by cell areas to give values in Mg
     if map_vars[vv]!='training':
