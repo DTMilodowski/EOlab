@@ -18,7 +18,7 @@ If the "country" option is specified as "None", then by default no clipping of
 the data will be undertaken, otherwise the data will be clipped to the national
 boundaries of the specified country.
 """
-
+"""
 ## INPUT ARGUMENTS
 country = 'Colombia'
 outfileID = 'colombia' # this is to use as a prefix on the final tiff files produced
@@ -43,9 +43,35 @@ axis_labels = [ 'AGB$_{obs}$ / Mg(C) ha$^{-1}$',
                 'Sequestration potential / Mg(C) ha$^{-1}$',
                 'AGB$_{deficit}$ / Mg(C) ha$^{-1}$',
                 'Training set']
+"""
+## READ INPUT ARGUMENTS
+from  input_arguments_ghana import country,outfileID, DATADIR, SAVEDIR, NetCDF_file, ne_shp,\
+                                    Cscale, map_vars,cmaps,ulims,llims,axis_labels
 
 ## IMPORT PACKAGES
-run import_pkgs.py
+import numpy as np
+import pandas as pd
+import os as os
+import sys as sys
+
+# Plotting libraries
+import matplotlib as mpl
+import matplotlib.cm as cm
+import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap as ListedColormap
+import seaborn as sns
+plt.cla()
+
+# GIS libraries
+import xarray as xr
+import geopandas as geopandas
+from geopandas.tools import sjoin
+from cartopy.io.shapereader import Reader as Reader
+from shapely.geometry import Point as Point
+
+# custom libraries
+sys.path.append('../')
+import prepare_EOlab_layers as EO
 
 # create colormap for training data
 colours = np.asarray(['#46E900','#1A2BCE'])
