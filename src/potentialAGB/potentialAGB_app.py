@@ -19,7 +19,7 @@ the data will be undertaken, otherwise the data will be clipped to the national
 boundaries of the specified country.
 """
 ## READ INPUT ARGUMENTS
-from  input_arguments_brazil import country,outfileID, DATADIR, SAVEDIR, NetCDF_file, ne_shp,\
+from  input_arguments_mexico import country,outfileID, DATADIR, SAVEDIR, NetCDF_file, ne_shp,\
                                     Cscale, map_vars,cmaps,ulims,llims,axis_labels
 
 ## IMPORT PACKAGES
@@ -66,7 +66,7 @@ vars.append(list(ds.data_vars)[-1])
 
 ## CLIP IF REQUIRED
 if country!="None":
-
+    # get bounds of national border shapefile to clip raster to required extent
     sf = Reader(ne_shp)
     boundaries = [i for i in sf.records() if i.attributes['admin'] == country]
     N=0.;S=0.;W=0.;E=0
@@ -78,6 +78,7 @@ if country!="None":
         else:
             N=max(N,b.bounds[3]);E=max(E,b.bounds[2]);W=min(W,b.bounds[0]);S=min(S,b.bounds[1])
 
+    # clip raster based on this extent
     lat_mask = np.all((lat<=N+abs(dlat),lat>=S-abs(dlat)),axis=0)
     lon_mask = np.all((lon<=E+abs(dlon),lon>=W-abs(dlon)),axis=0)
     n_lat = lat_mask.sum()
@@ -94,7 +95,7 @@ if country!="None":
     for ilon in range(0,n_lon):
       latgrid[:,ilon] = lat_clip.copy()
 
-    # now loop through all polygons, and find the pixels which fall within them
+    # now mask pixels that fall outside of country boundary
     inside = np.zeros(n_lat*n_lon)
     testlon = longrid.reshape(n_lat*n_lon)
     testlat = latgrid.reshape(n_lat*n_lon)
@@ -107,9 +108,9 @@ if country!="None":
     df['Coordinates'] = df['Coordinates'].apply(Point)
     point = geopandas.GeoDataFrame(df, geometry='Coordinates')
     pointInPolys = sjoin(point, boundaries, how='left')
-    country_mask = np.reshape(np.asarray(pointInPolys.admin)=='Colombia',(n_lat,n_lon))
+    country_mask = np.reshape(np.asarray(pointInPolys.admin)==country,(n_lat,n_lon))
 
-    # apply clip
+    # Save into dictionary of processed layers
     dataset = {}
     for vv in range(0,len(vars)):
         dataset[vars[vv]]= np.asarray(ds.variables[vars[vv]])[array_mask]
