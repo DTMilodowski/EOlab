@@ -18,9 +18,6 @@ If the "country" option is specified as "None", then by default no clipping of
 the data will be undertaken, otherwise the data will be clipped to the national
 boundaries of the specified country.
 """
-## READ INPUT ARGUMENTS
-from  input_arguments_mexico import country,outfileID, DATADIR, SAVEDIR, NetCDF_file, ne_shp,\
-                                    Cscale, map_vars,cmaps,ulims,llims,axis_labels
 
 ## IMPORT PACKAGES
 import numpy as np
@@ -47,6 +44,27 @@ from shapely.geometry import Point
 sys.path.append('../')
 import prepare_EOlab_layers as EO
 
+print(sys.argv[1])
+if sys.argv[1] == 'Brazil':
+    ## READ INPUT ARGUMENTS
+    from  input_arguments_brazil import country,outfileID, DATADIR, SAVEDIR, NetCDF_file, ne_shp,\
+                                    Cscale, map_vars,cmaps,ulims,llims,axis_labels
+if sys.argv[1] == 'Mexico':
+    ## READ INPUT ARGUMENTS
+    from  input_arguments_mexico import country,outfileID, DATADIR, SAVEDIR, NetCDF_file, ne_shp,\
+                                    Cscale, map_vars,cmaps,ulims,llims,axis_labels
+if sys.argv[1] == 'Ghana':
+    ## READ INPUT ARGUMENTS
+    from  input_arguments_ghana import country,outfileID, DATADIR, SAVEDIR, NetCDF_file, ne_shp,\
+                                    Cscale, map_vars,cmaps,ulims,llims,axis_labels
+if sys.argv[1] == 'Indonesia':
+    ## READ INPUT ARGUMENTS
+    from  input_arguments_indonesia import country,outfileID, DATADIR, SAVEDIR, NetCDF_file, ne_shp,\
+                                    Cscale, map_vars,cmaps,ulims,llims,axis_labels
+if sys.argv[1] == 'Colombia':
+    ## READ INPUT ARGUMENTS
+    from  input_arguments_colombia import country,outfileID, DATADIR, SAVEDIR, NetCDF_file, ne_shp,\
+                                    Cscale, map_vars,cmaps,ulims,llims,axis_labels
 # create colormap for training data
 colours = np.asarray(['#46E900','#1A2BCE'])
 training_labels = np.asarray(['initial','supplementary'])
