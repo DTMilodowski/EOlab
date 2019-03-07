@@ -268,7 +268,8 @@ def write_array_to_display_layer_GeoTiff(array, geoTrans, OUTFILE_prefix, cmap, 
     driver.Register()
 
     # set all the relevant geospatial information
-    dataset = driver.Create( 'temp.tif', NCols, NRows, NBands_RGB, gdal.GDT_Byte )
+    temp_file = "temp_%.0f.tif" % (np.random.random()*10**9)
+    dataset = driver.Create( temp_file, NCols, NRows, NBands_RGB, gdal.GDT_Byte )
     dataset.SetGeoTransform( geoTrans )
     srs = osr.SpatialReference()
     srs.SetWellKnownGeogCS( 'EPSG:'+EPSG_CODE_DATA )
@@ -279,7 +280,6 @@ def write_array_to_display_layer_GeoTiff(array, geoTrans, OUTFILE_prefix, cmap, 
     dataset = None
 
     # now use gdalwarp to reproject
-    temp_file = "temp_%.0f.tif" % (np.random.random()*10**9)
     os.system("gdalwarp -t_srs EPSG:" + EPSG_CODE_DISPLAY + " " + temp_file +  " " + OUTFILE_prefix+'_display.tif')
     os.system("rm %s" % temp_file)
     return 0
