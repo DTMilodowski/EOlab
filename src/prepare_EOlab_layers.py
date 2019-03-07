@@ -279,8 +279,9 @@ def write_array_to_display_layer_GeoTiff(array, geoTrans, OUTFILE_prefix, cmap, 
     dataset = None
 
     # now use gdalwarp to reproject
-    os.system("gdalwarp -t_srs EPSG:" + EPSG_CODE_DISPLAY + " temp.tif " + OUTFILE_prefix+'_display.tif')
-    os.system("rm temp.tif")
+    temp_file = "temp_%.0f.tif" % (np.random.random()*10**9)
+    os.system("gdalwarp -t_srs EPSG:" + EPSG_CODE_DISPLAY + " " + temp_file +  " " + OUTFILE_prefix+'_display.tif')
+    os.system("rm %s" % temp_file)
     return 0
 
 
