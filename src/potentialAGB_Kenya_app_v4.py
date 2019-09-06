@@ -23,8 +23,9 @@ import prepare_EOlab_layers as EO
 sys.path.append('/home/dmilodow/DataStore_DTM/FOREST2020/PotentialBiomassRFR/src')
 import useful as useful
 # set default cmap
-plt.set_cmap(sns.light_palette('seagreen',as_cmap=True))
-
+plt.set_cmap('viridis')
+plt.register_cmap(name='divergent', cmap=sns.diverging_palette(275,150,l=66,s=90,as_cmap=True))
+#sns.light_palette('seagreen',as_cmap=True)
 """
 #===============================================================================
 PART A: DEFINE PATHS AND LOAD IN DATA
@@ -38,50 +39,67 @@ country = 'Kenya'
 version = '001'
 
 path2data = '/disk/scratch/local.2/dmilodow/PotentialBiomass/processed/%s/' % country_code
+path2model  = '/home/dmilodow/DataStore_DTM/FOREST2020/PotentialBiomassRFR/output/'
 path2output = '/home/dmilodow/DataStore_DTM/EOlaboratory/EOlab/KenyaPotentialAGB/'
 boundaries_shp = '/home/dmilodow/DataStore_DTM/EOlaboratory/Areas/ne_50m_admin_0_tropical_countries_small_islands_removed.shp'
 
 # load potential biomass models from netdf file
-AGBpot_ds = xr.open_dataset('%s%s_%s_AGB_potential_RFR_worldclim_soilgrids_final.nc' %
-                                (path2output, country_code,version))
-AGBpot     = AGBpot_ds['AGBpot'].values
-AGBobs     = AGBpot_ds['AGBobs'].values
-AGBseq     = AGBpot-AGBobs
-AGBpot_min = AGBpot_ds['AGBpot_min'].values
-AGBobs_min = AGBpot_ds['AGBobs_min'].values
-AGBseq_min = AGBpot_min-AGBobs_min
-AGBpot_max = AGBpot_ds['AGBpot_max'].values
-AGBobs_max = AGBpot_ds['AGBobs_max'].values
-AGBseq_max = AGBpot_max-AGBobs_max
+dataset = xr.open_dataset('%s%s_%s_AGB_potential_RFR_worldclim_soilgrids_final.nc' %
+                                (path2model, country_code,version))
+dataset['AGBseq'] = dataset['AGBpot']-dataset['AGBobs']
+dataset['AGBseq_min'] = dataset['AGBpot_min']-dataset['AGBobs_min']
+dataset['AGBseq_max'] = dataset['AGBpot_max']-dataset['AGBobs_max']
 
-# Calculate cell areas
-cell_areas =  useful.get_areas(latorig=AGBpot_ds.coords['lat'].values,
-                            lonorig=AGBpot_ds.coords['lon'].values)
-cell_areas/=10**4 # m^2 -> ha
+# load opportunity map
+opportunity = xr.open_rasterio('%sWRI_restoration/WRI_restoration_opportunities_%s.tif' % (path2data, country_code))[0]
 
-# create national boundary mask
+# Load ESACCI data for 2005
+esacci2005 = useful.load_esacci('EAFR',year=2005,aggregate=1)
+
+# create and apply national boundary mask
 # - load template raster
 template = rasterio.open('%s/agb/Avitabile_AGB_%s_1km.tif' % (path2data,country_code))
 # - load shapefile
 boundaries = fiona.open(boundaries_shp)
 # - for country of interest, make mask
+mask = np.zeros(template.shape)
 for feat in boundaries:
     name = feat['properties']['admin']
     if name==country:
         image,transform = rasterio.mask.mask(template,[feat['geometry']],crop=False)
-masks = {}
-masks[country] = image[0]>=0
-masks[country] *=np.isfinite(AGBpot)
+        mask[image[0]>=0]=1
 
+"""
+PART B: Create data and display layers
+- AGBobs
+- AGBpot
+- AGBseq
+- WRI restoration opportunity
+- ?landcover
+"""
+file_prefix = path2output + country.lower() + '_'
 
+vars = ['AGBobs','AGBpot','AGBseq']
+cmaps = ['viridis','viridis','divergent']
+axis_labels = ['AGB$_{obs}$ / Mg ha$^{-1}$', 'AGB$_{potential}$ / Mg ha$^{-1}$', 'Sequestration potential / Mg ha$^{-1}$']
+ulims = [300,300,300]
+llims = [0,0,-300]
+for vv,var in enumerate(vars):
+    print(var)
+    file_prefix = '%s%s_%s' % (path2output, country.lower(), var)
 
+    # delete existing dataset if present
+    if '%s_%s_data.tif' % (country.lower(),var) in os.listdir(path2output):
+        os.system("rm %s" % ('%s_data.tif' % (file_prefix)))
+    if '%s_%s_display.tif' % (country.lower(),var) in os.listdir(path2output):
+        os.system("rm %s" % ('%s_display.tif' % (file_prefix)))
 
+    # apply country mask
+    dataset[var].values[mask==0]  = np.nan
 
-
-
-
-
-
+    # write display layers
+    EO.write_xarray_to_display_layer_GeoTiff(dataset[vars[vv]], file_prefix, cmaps[vv], ulims[vv], llims[vv])
+    EO.plot_legend(cmaps[vv],ulims[vv],llims[vv],axis_labels[vv], file_prefix)
 
 
 
