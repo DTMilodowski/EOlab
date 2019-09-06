@@ -321,3 +321,196 @@ def plot_legend_listed(cmap,labels,axis_label, OUTFILE_prefix):
     plt.savefig(OUTFILE_prefix+'_legend.png')
     #plt.show()
     return 0
+
+
+"""
+DATA IO VARIANTS FOR XARRAY
+"""
+"""
+load_geotiff_to_xarray
+A very simple function that reads a geotiff and returns it as an xarray. Nodata
+values are converted to the numpy nodata value.
+The input arguments are:
+- filename (this should include the full path to the file)
+Optional arguments are:
+- band (default = 1)
+- x_name (default = 'longitude')
+- y_name (default = 'latitude')
+- nodata_option (default = 0).
+            0: use value in dataset metadata. This is usually fine, except if
+                there is an issue with the precision, and is applied in all
+                cases.
+            1: arbitrary cutoff for nodata to account for precision problems
+                with float32. Other similar options could be added if necessary.
+            2: set all negative values as nodata
+
+
+"""
+def load_geotiff_to_xarray(filename, band = 1,x_name='longitude',y_name='latitude',option=0):
+    xarr = xr.open_rasterio(filename).sel(band=band)
+    if(option==0):
+        xarr.values[xarr.values==xarr.nodatavals[0]]=np.nan
+    if(option==1):
+        xarr.values[xarr.values<-3*10**38]=np.nan
+    if(option==2):
+        xarr.values[xarr.values<0]=np.nan
+    return xarr #return the xarray object
+
+"""
+copy_xarray_template to create a new array
+"""
+def copy_xarray_template(xarr):
+    xarr_new = xarr.copy()
+    xarr_new.values = np.zeros(xarr.values.shape)*np.nan
+    return xarr_new
+
+"""
+create a geoTransform object from xarray info
+"""
+def create_geoTrans(array,x_name='x',y_name='y'):
+    lat = array.coords[y_name].values
+    lon = array.coords[x_name].values
+    dlat = lat[1]-lat[0]
+    dlon = lon[1]-lon[0]
+    geoTrans = [0,dlon,0,0,0,dlat]
+    geoTrans[0] = np.min(lon)-dlon/2.
+    if geoTrans[5]>0:
+        geoTrans[3]=np.min(lat)-dlat/2.
+    else:
+        geoTrans[3]=np.max(lat)-dlat/2.
+    return geoTrans
+
+"""
+check array orientation based on metadata and flip so that it will display
+correctly on the EOlab platform
+"""
+def check_array_orientation(array,geoTrans,north_up=True):
+    if north_up:
+        # for north_up array, need the n-s resolution (element 5) to be negative
+        if geoTrans[5]>0:
+            geoTrans[5]*=-1
+            geoTrans[3] = geoTrans[3]-(array.shape[0]+1.)*geoTrans[5]
+        # Get array dimensions and flip so that it plots in the correct orientation on GIS platforms
+        if len(array.shape) < 2:
+            print('array has less than two dimensions! Unable to write to raster')
+            sys.exit(1)
+        elif len(array.shape) == 2:
+            array = np.flipud(array)
+        elif len(array.shape) == 3:
+            (NRows,NCols,NBands) = array.shape
+            for i in range(0,NBands):
+                array[:,:,i] = np.flipud(array[:,:,i])
+        else:
+            print('array has too many dimensions! Unable to write to raster')
+            sys.exit(1)
+
+    else:
+        # for north_up array, need the n-s resolution (element 5) to be positive
+        if geoTrans[5]<0:
+            geoTrans[5]*=-1
+            geoTrans[3] = geoTrans[3]-(array.shape[0]+1.)*geoTrans[5]
+        # Get array dimensions and flip so that it plots in the correct orientation on GIS platforms
+        if len(array.shape) < 2:
+            print('array has less than two dimensions! Unable to write to raster')
+            sys.exit(1)
+        elif len(array.shape) == 2:
+            array = np.flipud(array)
+        elif len(array.shape) == 3:
+            (NRows,NCols,NBands) = array.shape
+            for i in range(0,NBands):
+                array[:,:,i] = np.flipud(array[:,:,i])
+        else:
+            print ('array has too many dimensions! Unable to write to raster')
+            sys.exit(1)
+
+    # Get array dimensions and flip so that it plots in the correct orientation on GIS platforms
+    if len(array.shape) < 2:
+        print ('array has less than two dimensions! Unable to write to raster')
+        sys.exit(1)
+    elif len(array.shape) == 2:
+        array = np.flipud(array)
+    elif len(array.shape) == 3:
+        (NRows,NCols,NBands) = array.shape
+        for i in range(0,NBands):
+            array[:,:,i] = np.flipud(array[:,:,i])
+    else:
+        print ('array has too many dimensions! Unable to write to raster')
+        sys.exit(1)
+
+    return array,geoTrans
+
+"""
+# Write xarray to data layer geotiff
+"""
+def write_xarray_to_data_layer_GeoTiff(array, OUTFILE_prefix,EPSG_CODE='4326',north_up=True):
+    NBands = 1
+    NRows,NCols = array.values.shape
+    # create geotrans object
+    geoTrans = create_geoTrans(array)
+    # check orientation
+    array.values,geoTrans = check_array_orientation(array.values,geoTrans,north_up=north_up)
+    # set nodatavalue
+    array.values[np.isnan(array.values)] = -9999
+
+    # Write GeoTiff
+    driver = gdal.GetDriverByName('GTiff'); driver.Register()
+    # set all the relevant geospatial information
+    dataset = driver.Create( OUTFILE_prefix+'.tif', NCols, NRows, NBands, gdal.GDT_Float32 )
+    dataset.SetGeoTransform( geoTrans )
+    srs = osr.SpatialReference()
+    srs.SetWellKnownGeogCS( 'EPSG:'+EPSG_CODE )
+    dataset.SetProjection( srs.ExportToWkt() )
+    # write array
+    dataset.GetRasterBand(1).SetNoDataValue( -9999 )
+    dataset.GetRasterBand(1).WriteArray( array.values )
+    dataset = None
+    return 0
+
+
+"""
+# Write xarray to data and display layer geotiffs
+"""
+def write_xarray_to_display_layer_GeoTiff(array, OUTFILE_prefix, cmap, ulim, llim, EPSG_CODE_DATA='4326', EPSG_CODE_DISPLAY='3857', north_up=True):
+
+    NBands = 1
+    NBands_RGB = 3
+    NRows,NCols = array.values.shape
+    # create geotrans object
+    geoTrans = create_geoTrans(array,x_name='lon',y_name='lat')
+    # check orientation
+    array.values,geoTrans = check_array_orientation(array.values,geoTrans,north_up=north_up)
+    # set nodatavalue
+    array.values[np.isnan(array.values)] = -9999
+    # Convert RGB array
+    rgb_array = convert_array_to_rgb(array.values,cmap,ulim,llim)
+
+    # Write Data Layer GeoTiff
+    driver = gdal.GetDriverByName('GTiff'); driver.Register()
+    # set all the relevant geospatial information
+    dataset = driver.Create( OUTFILE_prefix+'_data.tif', NCols, NRows, NBands, gdal.GDT_Float32 )
+    dataset.SetGeoTransform( geoTrans )
+    srs = osr.SpatialReference()
+    srs.SetWellKnownGeogCS( 'EPSG:'+EPSG_CODE_DATA )
+    dataset.SetProjection( srs.ExportToWkt() )
+    dataset.GetRasterBand(1).SetNoDataValue( -9999 )
+    dataset.GetRasterBand(1).WriteArray( array.values )
+    dataset = None
+
+    # Write Display Layer GeoTiff
+    driver = gdal.GetDriverByName('GTiff')
+    driver.Register()
+    # set all the relevant geospatial information
+    temp_file = "temp_%.0f.tif" % (np.random.random()*10**9)
+    dataset = driver.Create( temp_file, NCols, NRows, NBands_RGB, gdal.GDT_Byte )
+    dataset.SetGeoTransform( geoTrans )
+    srs = osr.SpatialReference()
+    srs.SetWellKnownGeogCS( 'EPSG:'+EPSG_CODE_DATA )
+    dataset.SetProjection( srs.ExportToWkt() )
+    for bb in range(0,3):
+        dataset.GetRasterBand(bb+1).WriteArray( rgb_array[:,:,bb] )
+    dataset = None
+
+    # now use gdalwarp to reproject via the command line
+    os.system("gdalwarp -t_srs EPSG:" + EPSG_CODE_DISPLAY + " " + temp_file +  " " + OUTFILE_prefix+'_display.tif')
+    os.system("rm %s" % temp_file)
+    return 0
