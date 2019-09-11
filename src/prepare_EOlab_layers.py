@@ -302,11 +302,11 @@ def plot_legend(cmap,ulim,llim,axis_label, OUTFILE_prefix,extend='neither'):
     return 0
 
 
-def plot_legend_listed(cmap,labels,axis_label, OUTFILE_prefix):
+def plot_legend_listed(cmap,labels,axis_label, OUTFILE_prefix,figsize=[1.5,1]):
     bounds = np.arange(len(labels)+1)
     norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
     #plt.figure(1, facecolor='White',figsize=[1.5, 1])
-    fig,ax = plt.subplots(facecolor='White',figsize=[1.5, 1])
+    fig,ax = plt.subplots(facecolor='White',figsize=figsize)
     ax = plt.subplot2grid((1,1),(0,0))
     cb = mpl.colorbar.ColorbarBase(ax,cmap=cmap,norm=norm,
                                 orientation='vertical')
