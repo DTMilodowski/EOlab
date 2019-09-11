@@ -17,6 +17,7 @@ import fiona
 import matplotlib as mpl
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
 import seaborn as sns
 # import custom libraries
 import prepare_EOlab_layers as EO
@@ -46,9 +47,9 @@ boundaries_shp = '/home/dmilodow/DataStore_DTM/EOlaboratory/Areas/ne_50m_admin_0
 # load potential biomass models from netdf file
 dataset = xr.open_dataset('%s%s_%s_AGB_potential_RFR_worldclim_soilgrids_final.nc' %
                                 (path2model, country_code,version))
-dataset['AGBseq'] = dataset['AGBpot']-dataset['AGBobs']
-dataset['AGBseq_min'] = dataset['AGBpot_min']-dataset['AGBobs_min']
-dataset['AGBseq_max'] = dataset['AGBpot_max']-dataset['AGBobs_max']
+dataset['AGBseq'] = (dataset['AGBpot']-dataset['AGBobs'])/2.
+dataset['AGBseq_min'] = (dataset['AGBpot_min']-dataset['AGBobs_min'])/2.
+dataset['AGBseq_max'] = (dataset['AGBpot_max']-dataset['AGBobs_max'])/2.
 
 # load opportunity map
 opportunity = xr.open_rasterio('%sWRI_restoration/WRI_restoration_opportunities_%s.tif' % (path2data, country_code))[0]
@@ -81,9 +82,9 @@ file_prefix = path2output + country.lower() + '_'
 
 vars = ['AGBobs','AGBpot','AGBseq']
 cmaps = ['viridis','viridis','divergent']
-axis_labels = ['AGB$_{obs}$ / Mg ha$^{-1}$', 'AGB$_{potential}$ / Mg ha$^{-1}$', 'Sequestration potential / Mg ha$^{-1}$']
-ulims = [300,300,300]
-llims = [0,0,-300]
+axis_labels = ['AGB$_{obs}$ / Mg ha$^{-1}$', 'AGB$_{potential}$ / Mg ha$^{-1}$', 'Sequestration potential / Mg(C) ha$^{-1}$']
+ulims = [300,300,150]
+llims = [0,0,-150]
 for vv,var in enumerate(vars):
     print(var)
     file_prefix = '%s%s_%s' % (path2output, country.lower(), var)
@@ -98,5 +99,60 @@ for vv,var in enumerate(vars):
     dataset[var].values[mask==0]  = np.nan
 
     # write display layers
-    EO.write_xarray_to_display_layer_GeoTiff(dataset[vars[vv]], file_prefix, cmaps[vv], ulims[vv], llims[vv])
     EO.plot_legend(cmaps[vv],ulims[vv],llims[vv],axis_labels[vv], file_prefix)
+    EO.write_xarray_to_display_layer_GeoTiff(dataset[vars[vv]], file_prefix, cmaps[vv], ulims[vv], llims[vv])
+
+
+# WRI opportunity map
+opportunity.values=opportunity.values.astype('float')
+opportunity.values[mask==0]=np.nan
+id =    np.arange(0,5)
+#labels = np.asarray( ['existing forest','wide-scale','mosaic','remote','urban-agriculture'])
+#colours = np.asarray(['#00ac4b', '#055f9a', '#318ac4', '#023a5f', "#955300"])
+labels = np.asarray( ['existing natural cover','wide-scale','mosaic','remote','urban-agriculture'])
+colours = np.asarray(['#67afde', '#00883b', '#00c656', '#004c21', "#6a3b00"])
+
+id_temp,idx_landcover,idx_id = np.intersect1d(opportunity,id,return_indices=True)
+id = id[idx_id]
+labels=labels[idx_id]
+colours=colours[idx_id]
+wri_cmap = ListedColormap(sns.color_palette(colours).as_hex())
+EO.plot_legend_listed(wri_cmap,labels,'',file_prefix,figsize=[2,1])
+
+file_prefix = '%s%s_wri' % (path2output, country.lower())
+if '%s_wri_data.tif' % (country.lower()) in os.listdir(path2output):
+    os.system("rm %s" % ('%s%s_data.tif' % (file_prefix,country.lower())))
+
+if '%s_wri_display.tif' % (country.lower()) in os.listdir(path2output):
+    os.system("rm %s" % ('%s%s_display.tif' % (path2output,country.lower())))
+EO.write_xarray_to_display_layer_GeoTiff(opportunity, file_prefix, wri_cmap, 4, 0)
+
+# ESA CCI Land cover
+esacci2005.values=esacci2005.values.astype('float')
+esacci2005.values[mask==0]=np.nan
+lc = essacci2005.values.copy()
+esacci2005.values[lc==2] = 0
+esacci2005.values[lc==3] = 1
+esacci2005.values[lc==6] = 2
+esacci2015.values[lc==8] = 3
+esacci2015.values[lc==9] = 4
+esacci2015.values[lc==4] = 5
+esacci2015.values[lc==1] = 6
+lc_class = ['Forest','Grass','Shrub','Sparse','Bare','Wetland','Agriculture','Urban']
+colours = np.asarray(['#67afde', '#00883b', '#00c656', '#004c21', "#6a3b00"])
+lc_id = np.arange(0,7)
+
+id_temp,idx_landcover,idx_id = np.intersect1d(esacci2005.values,id,return_indices=True)
+id = id[idx_id]
+lc_class=lc_class[idx_id]
+colours=colours[idx_id]
+esacci_cmap = ListedColormap(sns.color_palette(colours).as_hex())
+EO.plot_legend_listed(esacci_cmap,labels,'',file_prefix,figsize=[2,1])
+
+file_prefix = '%s%s_esacci_lc_2005' % (path2output, country.lower())
+if '%s_wri_data.tif' % (country.lower()) in os.listdir(path2output):
+    os.system("rm %s" % ('%s%s_data.tif' % (file_prefix,country.lower())))
+
+if '%s_wri_display.tif' % (country.lower()) in os.listdir(path2output):
+    os.system("rm %s" % ('%s%s_display.tif' % (path2output,country.lower())))
+EO.write_xarray_to_display_layer_GeoTiff(esacci2005, file_prefix, esacci2005_cmap, 6, 0)
