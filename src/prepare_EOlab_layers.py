@@ -446,7 +446,7 @@ def write_xarray_to_data_layer_GeoTiff(array, OUTFILE_prefix,EPSG_CODE='4326',no
     NBands = 1
     NRows,NCols = array.values.shape
     # create geotrans object
-    geoTrans = create_geoTrans(array)
+    geoTrans = create_geoTrans(array,x_name=array.dims[1],y_name=array.dims[0])
     # check orientation
     array.values,geoTrans = check_array_orientation(array.values,geoTrans,north_up=north_up)
     # set nodatavalue
@@ -476,7 +476,7 @@ def write_xarray_to_display_layer_GeoTiff(array, OUTFILE_prefix, cmap, ulim, lli
     NBands_RGB = 3
     NRows,NCols = array.values.shape
     # create geotrans object
-    geoTrans = create_geoTrans(array,x_name='lon',y_name='lat')
+    geoTrans = create_geoTrans(array,x_name=array.dims[1],y_name=array.dims[0])
     # check orientation
     array.values,geoTrans = check_array_orientation(array.values,geoTrans,north_up=north_up)
     # set nodatavalue
