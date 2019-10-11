@@ -57,6 +57,15 @@ opportunity = xr.open_rasterio('%sWRI_restoration/WRI_restoration_opportunities_
 # Load ESACCI data for 2005
 esacci2005 = useful.load_esacci('EAFR',year=2005,aggregate=1)
 
+# Create potential and sequestration layers with agriculture and settlements
+# maintained at original AGB (i.e. feasible restoration)
+people_mask = np.any((esacci2005==4,esacci2005==1),axis=0)
+dataset['AGBpot_natural']=dataset['AGBpot'].copy()
+dataset['AGBpot_natural'].values[people_mask]=dataset['AGBobs'].values[people_mask]
+dataset['AGBseq_natural']=dataset['AGBseq'].copy()
+dataset['AGBseq_natural'].values[people_mask]=0
+
+
 # create and apply national boundary mask
 # - load template raster
 template = rasterio.open('%s/agb/Avitabile_AGB_%s_1km.tif' % (path2data,country_code))
@@ -80,11 +89,11 @@ PART B: Create data and display layers
 """
 file_prefix = path2output + country.lower() + '_'
 
-vars = ['AGBobs','AGBpot','AGBseq']
-cmaps = ['viridis','viridis','divergent']
-axis_labels = ['AGB$_{obs}$ / Mg ha$^{-1}$', 'AGB$_{potential}$ / Mg ha$^{-1}$', 'Sequestration potential / Mg(C) ha$^{-1}$']
-ulims = [300,300,150]
-llims = [0,0,-150]
+vars = ['AGBobs','AGBpot','AGBseq','AGBpot_natural','AGBseq_natural']
+cmaps = ['viridis','viridis','divergent','viridis','divergent']
+axis_labels = ['AGB$_{obs}$ / Mg ha$^{-1}$', 'AGB$_{potential}$ / Mg ha$^{-1}$', 'Sequestration potential / Mg(C) ha$^{-1}$', 'AGB$_{potential}$ / Mg ha$^{-1}$', 'Sequestration potential / Mg(C) ha$^{-1}$'']
+ulims = [300,300,150,300,150]
+llims = [0,0,-150,0,-150]
 for vv,var in enumerate(vars):
     print(var)
     file_prefix = '%s%s_%s' % (path2output, country.lower(), var)
