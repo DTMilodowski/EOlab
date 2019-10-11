@@ -91,7 +91,7 @@ file_prefix = path2output + country.lower() + '_'
 
 vars = ['AGBobs','AGBpot','AGBseq','AGBpot_natural','AGBseq_natural']
 cmaps = ['viridis','viridis','divergent','viridis','divergent']
-axis_labels = ['AGB$_{obs}$ / Mg ha$^{-1}$', 'AGB$_{potential}$ / Mg ha$^{-1}$', 'Sequestration potential / Mg(C) ha$^{-1}$', 'AGB$_{potential}$ / Mg ha$^{-1}$', 'Sequestration potential / Mg(C) ha$^{-1}$'']
+axis_labels = ['AGB$_{obs}$ / Mg ha$^{-1}$', 'AGB$_{potential}$ / Mg ha$^{-1}$', 'Sequestration potential / Mg(C) ha$^{-1}$', 'AGB$_{potential}$ / Mg ha$^{-1}$', 'Sequestration potential / Mg(C) ha$^{-1}$']
 ulims = [300,300,150,300,150]
 llims = [0,0,-150,0,-150]
 for vv,var in enumerate(vars):
