@@ -37,34 +37,14 @@ PART A: DEFINE PATHS AND LOAD IN DATA
 """
 country_code = 'EAFR'
 country = 'Kenya'
-version = '001'
+version = '013'
 
-path2data = '/disk/scratch/local.2/dmilodow/PotentialBiomass/processed/%s/' % country_code
+path2data = '/disk/scratch/local.2/PotentialBiomass/processed/%s/' % country_code
 path2model  = '/home/dmilodow/DataStore_DTM/FOREST2020/PotentialBiomassRFR/output/'
 path2output = '/home/dmilodow/DataStore_DTM/EOlaboratory/EOlab/KenyaPotentialAGB/'
 boundaries_shp = '/home/dmilodow/DataStore_DTM/EOlaboratory/Areas/ne_50m_admin_0_tropical_countries_small_islands_removed.shp'
 
-# load potential biomass models from netdf file
-dataset = xr.open_dataset('%s%s_%s_AGB_potential_RFR_worldclim_soilgrids_final.nc' %
-                                (path2model, country_code,version))
-dataset['AGBseq'] = (dataset['AGBpot']-dataset['AGBobs'])/2.
-dataset['AGBseq_min'] = (dataset['AGBpot_min']-dataset['AGBobs_min'])/2.
-dataset['AGBseq_max'] = (dataset['AGBpot_max']-dataset['AGBobs_max'])/2.
-
-# load opportunity map
-opportunity = xr.open_rasterio('%sWRI_restoration/WRI_restoration_opportunities_%s.tif' % (path2data, country_code))[0]
-
-# Load ESACCI data for 2005
-esacci2005 = useful.load_esacci('EAFR',year=2005,aggregate=1)
-
-# Create potential and sequestration layers with agriculture and settlements
-# maintained at original AGB (i.e. feasible restoration)
-people_mask = np.any((esacci2005==4,esacci2005==1),axis=0)
-dataset['AGBpot_natural']=dataset['AGBpot'].copy()
-dataset['AGBpot_natural'].values[people_mask]=dataset['AGBobs'].values[people_mask]
-dataset['AGBseq_natural']=dataset['AGBseq'].copy()
-dataset['AGBseq_natural'].values[people_mask]=0
-
+source = ['globbiomass', 'avitabile']
 
 # create and apply national boundary mask
 # - load template raster
@@ -79,37 +59,59 @@ for feat in boundaries:
         image,transform = rasterio.mask.mask(template,[feat['geometry']],crop=False)
         mask[image[0]>=0]=1
 
-"""
-PART B: Create data and display layers
-- AGBobs
-- AGBpot
-- AGBseq
-- WRI restoration opportunity
-- ?landcover
-"""
-file_prefix = path2output + country.lower() + '_'
+# load opportunity map
+opportunity = xr.open_rasterio('%sWRI_restoration/WRI_restoration_opportunities_%s.tif' % (path2data, country_code))[0]
 
-vars = ['AGBobs','AGBpot','AGBseq','AGBpot_natural','AGBseq_natural']
-cmaps = ['viridis','viridis','divergent','viridis','divergent']
-axis_labels = ['AGB$_{obs}$ / Mg ha$^{-1}$', 'AGB$_{potential}$ / Mg ha$^{-1}$', 'Sequestration potential / Mg(C) ha$^{-1}$', 'AGB$_{potential}$ / Mg ha$^{-1}$', 'Sequestration potential / Mg(C) ha$^{-1}$']
-ulims = [300,300,150,300,150]
-llims = [0,0,-150,0,-150]
-for vv,var in enumerate(vars):
-    print(var)
-    file_prefix = '%s%s_%s' % (path2output, country.lower(), var)
+# Load ESACCI data for 2005
+esacci2005 = useful.load_esacci('EAFR',year=2005,aggregate=1)
 
-    # delete existing dataset if present
-    if '%s_%s_data.tif' % (country.lower(),var) in os.listdir(path2output):
-        os.system("rm %s" % ('%s_data.tif' % (file_prefix)))
-    if '%s_%s_display.tif' % (country.lower(),var) in os.listdir(path2output):
-        os.system("rm %s" % ('%s_display.tif' % (file_prefix)))
+for ss in source:
+    # load potential biomass models from netdf file
+    dataset = xr.open_dataset('%s%s_%s_AGB_potential_RFR_%s_worldclim_soilgrids_final.nc' %
+                                (path2model, country_code,version, ss))
+    dataset['AGBseq'] = (dataset['AGBpot']-dataset['AGBobs'])/2.
+    dataset['AGBseq_min'] = (dataset['AGBpot_min']-dataset['AGBobs_min'])/2.
+    dataset['AGBseq_max'] = (dataset['AGBpot_max']-dataset['AGBobs_max'])/2.
 
-    # apply country mask
-    dataset[var].values[mask==0]  = np.nan
+    # Create potential and sequestration layers with agriculture and settlements
+    # maintained at original AGB (i.e. feasible restoration)
+    people_mask = np.any((esacci2005==4,esacci2005==1),axis=0)
+    dataset['AGBpot_natural']=dataset['AGBpot'].copy()
+    dataset['AGBpot_natural'].values[people_mask]=dataset['AGBobs'].values[people_mask]
+    dataset['AGBseq_natural']=dataset['AGBseq'].copy()
+    dataset['AGBseq_natural'].values[people_mask]=0
 
-    # write display layers
-    EO.plot_legend(cmaps[vv],ulims[vv],llims[vv],axis_labels[vv], file_prefix)
-    EO.write_xarray_to_display_layer_GeoTiff(dataset[vars[vv]], file_prefix, cmaps[vv], ulims[vv], llims[vv])
+    """
+    PART B: Create data and display layers
+    - AGBobs
+    - AGBpot
+    - AGBseq
+    - WRI restoration opportunity
+    - ?landcover
+    """
+    file_prefix = path2output + country.lower() + '_'
+
+    vars = ['AGBobs','AGBpot','AGBseq','AGBpot_natural','AGBseq_natural']
+    cmaps = ['viridis','viridis','divergent','viridis','divergent']
+    axis_labels = ['AGB$_{obs}$ / Mg ha$^{-1}$', 'AGB$_{potential}$ / Mg ha$^{-1}$', 'Sequestration potential / Mg(C) ha$^{-1}$', 'AGB$_{potential}$ / Mg ha$^{-1}$', 'Sequestration potential / Mg(C) ha$^{-1}$']
+    ulims = [300,300,150,300,150]
+    llims = [0,0,-150,0,-150]
+    for vv,var in enumerate(vars):
+        print(var)
+        file_prefix = '%s%s_%s_%s' % (path2output, country.lower(), var, ss)
+
+        # delete existing dataset if present
+        if '%s_%s_%s_data.tif' % (country.lower(),var, ss) in os.listdir(path2output):
+            os.system("rm %s" % ('%s_data.tif' % (file_prefix)))
+        if '%s_%s_%s_display.tif' % (country.lower(),var, ss) in os.listdir(path2output):
+            os.system("rm %s" % ('%s_display.tif' % (file_prefix)))
+
+        # apply country mask
+        dataset[var].values[mask==0]  = np.nan
+
+        # write display layers
+        EO.plot_legend(cmaps[vv],ulims[vv],llims[vv],axis_labels[vv], file_prefix)
+        EO.write_xarray_to_display_layer_GeoTiff(dataset[vars[vv]], file_prefix, cmaps[vv], ulims[vv], llims[vv])
 
 
 # WRI opportunity map
