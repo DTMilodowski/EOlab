@@ -36,13 +36,13 @@ PART A: DEFINE PATHS AND LOAD IN DATA
 - WRI opportunity map
 #-------------------------------------------------------------------------------
 """
-country_code = 'EAFR'
+country_code = 'WAFR'
 country = 'Ghana'
 version = '013'
 
 path2data = '/disk/scratch/local.2/PotentialBiomass/processed/%s/' % country_code
 path2model  = '/home/dmilodow/DataStore_DTM/FOREST2020/PotentialBiomassRFR/output/'
-path2output = '/home/dmilodow/DataStore_DTM/EOlaboratory/EOlab/BrazilPotentialAGB/'
+path2output = '/home/dmilodow/DataStore_DTM/EOlaboratory/EOlab/%sPotentialAGB/' % country
 boundaries_shp = '/home/dmilodow/DataStore_DTM/EOlaboratory/Areas/ne_50m_admin_0_tropical_countries_small_islands_removed.shp'
 
 source = ['globbiomass', 'avitabile']
@@ -66,7 +66,7 @@ opportunity = xr.open_rasterio('%sWRI_restoration/WRI_restoration_opportunities_
 
 # Load ESACCI land cover data for 2005
 lc = deepcopy(opportunity)
-lc.values=useful.load_esacci(country_code,year=2005,aggregate=2)
+lc.values=useful.load_esacci(country_code,year=2005,aggregate=2)-1
 
 for ss in source:
 
@@ -147,7 +147,7 @@ lc_class = np.array(['Forest, broadleaf','Forest, needleleaf','Forest, mixed','W
 colours = np.asarray(['#1f4423', '#32cd32', '#129912', '#1d6f5c', '#45c2a5',
                     '#687537', '#bdb76b',  '#968c46', '#ffd966' , '#ffefc3', '#d5a6bd', '#c27ba0','#af2a2a'])
 
-lc_id = np.arange(1,14)
+lc_id = np.arange(0,13)
 
 id_temp,idx_landcover,idx_id = np.intersect1d(lc,lc_id,return_indices=True)
 lc_id = lc_id[idx_id]
@@ -164,4 +164,4 @@ if '%s_esacci_lc_2005_data.tif' % (country.lower()) in os.listdir(path2output):
 
 if '%s_esacci_lc_2005_display.tif' % (country.lower()) in os.listdir(path2output):
     os.system("rm %s" % ('%s%s_display.tif' % (file_prefix,country.lower())))
-EO.write_xarray_to_display_layer_GeoTiff(lc, file_prefix, lc_cmap, 6, 13)
+EO.write_xarray_to_display_layer_GeoTiff(lc, file_prefix, lc_cmap, 13, 0)
