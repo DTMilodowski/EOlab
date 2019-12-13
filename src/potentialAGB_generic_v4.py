@@ -142,12 +142,12 @@ if '%s_wri_display.tif' % (country.lower()) in os.listdir(path2output):
 EO.write_xarray_to_display_layer_GeoTiff(opportunity, file_prefix, wri_cmap, 4, 0)
 
 # ESACCI land cover data
-lc_class = np.array(['Forest, broadleaf','Forest, needleleaf','Forest, mixed','Wetland, flooded forest','Wetland, other',
+lc_class = np.array(['Forest, evergreen broadleaf','Forest, evergreen needleleaf','Forest, deciduous','Forest, mixed','Wetland, flooded forest','Wetland, other',
                     'Mixed forest-grassland','Grassland','Shrub','Sparse','Bare','Agri.-natural mosaic','Agriculture','Urban'])
-colours = np.asarray(['#1f4423', '#32cd32', '#129912', '#1d6f5c', '#45c2a5',
+colours = np.asarray(['#32cd32', '#1f4423', '#3e9000', '#31a73e', '#1d6f5c', '#45c2a5',
                     '#687537', '#bdb76b',  '#968c46', '#ffd966' , '#ffefc3', '#d5a6bd', '#c27ba0','#af2a2a'])
 
-lc_id = np.arange(0,13)
+lc_id = np.arange(0,14)
 
 id_temp,idx_landcover,idx_id = np.intersect1d(lc,lc_id,return_indices=True)
 lc_id = lc_id[idx_id]
@@ -155,13 +155,11 @@ lc_class=lc_class[idx_id]
 colours=colours[idx_id]
 lc_cmap = ListedColormap(sns.color_palette(colours).as_hex())
 lc_cmap_rev = ListedColormap(sns.color_palette(colours[::-1]).as_hex())
-file_prefix = '%s%s_esacci' % (path2output, country.lower())
-EO.plot_legend_listed(lc_cmap_rev,lc_class[::-1],'',file_prefix,figsize=[2,2])
 
 file_prefix = '%s%s_esacci_lc_2005' % (path2output, country.lower())
-if '%s_esacci_lc_2005_data.tif' % (country.lower()) in os.listdir(path2output):
-    os.system("rm %s" % ('%s%s_data.tif' % (file_prefix,country.lower())))
-
-if '%s_esacci_lc_2005_display.tif' % (country.lower()) in os.listdir(path2output):
-    os.system("rm %s" % ('%s%s_display.tif' % (file_prefix,country.lower())))
+EO.plot_legend_listed(lc_cmap_rev,lc_class[::-1],'',file_prefix,figsize=[2,2])
+if '%s_data.tif' % (country.lower()) in os.listdir(path2output):
+    os.system("rm %s_data.tif" % (file_prefix)))
+if '%s_display.tif' % file_prefix in os.listdir(path2output):
+    os.system("rm %s_display.tif'" % file_prefix)
 EO.write_xarray_to_display_layer_GeoTiff(lc, file_prefix, lc_cmap, 13, 0)
