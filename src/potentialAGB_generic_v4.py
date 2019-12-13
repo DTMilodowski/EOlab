@@ -36,8 +36,8 @@ PART A: DEFINE PATHS AND LOAD IN DATA
 - WRI opportunity map
 #-------------------------------------------------------------------------------
 """
-country_code = 'WAFR'
-country = 'Ghana'
+country_code = 'COL'
+country = 'Colombia'
 version = '013'
 
 path2data = '/disk/scratch/local.2/PotentialBiomass/processed/%s/' % country_code
@@ -159,7 +159,7 @@ lc_cmap_rev = ListedColormap(sns.color_palette(colours[::-1]).as_hex())
 file_prefix = '%s%s_esacci_lc_2005' % (path2output, country.lower())
 EO.plot_legend_listed(lc_cmap_rev,lc_class[::-1],'',file_prefix,figsize=[2,2])
 if '%s_data.tif' % (country.lower()) in os.listdir(path2output):
-    os.system("rm %s_data.tif" % (file_prefix)))
+    os.system("rm %s_data.tif" % file_prefix)
 if '%s_display.tif' % file_prefix in os.listdir(path2output):
     os.system("rm %s_display.tif'" % file_prefix)
 EO.write_xarray_to_display_layer_GeoTiff(lc, file_prefix, lc_cmap, 13, 0)
