@@ -6,10 +6,10 @@ import osr
 import sys
 from netCDF4 import Dataset
 
-
 import matplotlib as mpl
 import matplotlib.cm as cm
 from matplotlib import ticker
+import colour_tools as clt
 
 import scipy
 from scipy import ndimage, signal
@@ -512,5 +512,58 @@ def write_xarray_to_display_layer_GeoTiff(array, OUTFILE_prefix, cmap, ulim, lli
 
     # now use gdalwarp to reproject via the command line
     os.system("gdalwarp -t_srs EPSG:" + EPSG_CODE_DISPLAY + " " + temp_file +  " " + OUTFILE_prefix+'_display.tif')
+    os.system("rm %s" % temp_file)
+    return 0
+
+"""
+# Write xarray to data and display layer geotiffs
+# Applies greyscale (perceived luminosity) to areas defined by specified mask
+"""
+def write_xarray_to_display_layer_confidence_levels_GeoTiff(array, mask, OUTFILE_prefix, cmap, ulim, llim, EPSG_CODE_DATA='4326', EPSG_CODE_DISPLAY='3857', north_up=True):
+
+    NBands = 1
+    NBands_RGB = 3
+    NRows,NCols = array.values.shape
+    # create geotrans object
+    geoTrans = create_geoTrans(array,x_name=array.dims[1],y_name=array.dims[0])
+    # check orientation
+    array.values,geoTrans = check_array_orientation(array.values,geoTrans,north_up=north_up)
+    # set nodatavalue
+    array.values[np.isnan(array.values)] = -9999
+    # Convert RGB array
+    rgb_array = convert_array_to_rgb(array.values,cmap,ulim,llim)
+    rgb_luminosity_array = convert_array_to_rgb(array.values,clt.cmap_to_perceived_luminosity(cmap),ulim,llim)
+    mask = mask.reshape(mask.shape[0],mask.shape[1],1)
+    rgb_mask = np.concatenate((mask,mask,mask),axis=2)
+    rgb_array[rgb_mask] = rgb_luminosity_array[rgb_mask]
+
+    # Write Data Layer GeoTiff
+    driver = gdal.GetDriverByName('GTiff'); driver.Register()
+    # set all the relevant geospatial information
+    dataset = driver.Create( OUTFILE_prefix+'_confidence_data.tif', NCols, NRows, NBands, gdal.GDT_Float32 )
+    dataset.SetGeoTransform( geoTrans )
+    srs = osr.SpatialReference()
+    srs.SetWellKnownGeogCS( 'EPSG:'+EPSG_CODE_DATA )
+    dataset.SetProjection( srs.ExportToWkt() )
+    dataset.GetRasterBand(1).SetNoDataValue( -9999 )
+    dataset.GetRasterBand(1).WriteArray( array.values )
+    dataset = None
+
+    # Write Display Layer GeoTiff
+    driver = gdal.GetDriverByName('GTiff')
+    driver.Register()
+    # set all the relevant geospatial information
+    temp_file = "temp_%.0f.tif" % (np.random.random()*10**9)
+    dataset = driver.Create( temp_file, NCols, NRows, NBands_RGB, gdal.GDT_Byte )
+    dataset.SetGeoTransform( geoTrans )
+    srs = osr.SpatialReference()
+    srs.SetWellKnownGeogCS( 'EPSG:'+EPSG_CODE_DATA )
+    dataset.SetProjection( srs.ExportToWkt() )
+    for bb in range(0,3):
+        dataset.GetRasterBand(bb+1).WriteArray( rgb_array[:,:,bb] )
+    dataset = None
+
+    # now use gdalwarp to reproject via the command line
+    os.system("gdalwarp -t_srs EPSG:" + EPSG_CODE_DISPLAY + " " + temp_file +  " " + OUTFILE_prefix+'_confidence_display.tif')
     os.system("rm %s" % temp_file)
     return 0
